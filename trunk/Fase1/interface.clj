@@ -1,18 +1,23 @@
+(ns interface
+(:use db)
+
+)
 (import '(javax.swing JFrame JPanel JButton JLabel JTable)
-        '(javax.swing.table.DefaultTableModel)
+        '(javax.swing.table AbstractTableModel)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout Dimension FlowLayout)
 )
+
+
+
 
 (defn interface
   "nooooooooooooooooooooooooo"
   [title]
   (let [frame       (JFrame. title)
-  
-        panel       (JPanel. )
-        
-        table       (JTable. )
-  
+        panel       (JPanel. )  
+        panel2       (JPanel. )  
+        table       (JTable. 10 6)
         benjamin    (JButton. "Push me =)")
         btnShowall  (JButton. "Show All")
         btnUpdate   (JButton. "Update")
@@ -24,10 +29,19 @@
         
         
         
+        model (proxy[AbstractTableModel] [] 
+        	(isCellEditable [row col] true)
+        	(getRowCount [] 10)
+        	(getColumnCount [] 10)
+        	(getValueAt [row col] "")
+        )
+        	
+  
+        
         counter     (ref 0)
         hdlBenjamin     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
+                       	       (dosync (alter counter inc))
                          (.setText label 
                                 (str "Times pushed: " @counter))))
         hdlShowall     (proxy [ActionListener][]
@@ -65,14 +79,18 @@
         
     ;
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
-    
     ;
     (.setLayout panel (new FlowLayout))
+    (.setLayout frame (new FlowLayout))
     
     (.setPreferredSize label (Dimension. 300 50))
     
     ;
-    (.add panel table)
+    
+    
+    (.setModel table model) 
+    (.set
+    (.add panel2 table)
     (.add panel benjamin)
     (.add panel btnShowall)
     (.add panel btnUpdate)
@@ -80,10 +98,10 @@
     (.add panel btnFind)
     (.add panel btnLock)
     (.add panel btnUnlock)
-    
     (.add frame panel)
+    (.add frame panel2)
     
-    (.add frame BorderLayout/SOUTH label)
+    
     ;(.add frame BorderLayout/CENTER table)
     
     (.addActionListener benjamin hdlBenjamin)
@@ -96,10 +114,17 @@
     
     (.pack frame)
     (.setVisible frame true)
-    (.setSize frame 400 400)
-    
+    (.setSize frame 800 600)
     (.setModel table 5 5)
+    
+    
+ 
+    
+    
   )
+  
+  
+  
 )
 
 (interface "Fase 1")
