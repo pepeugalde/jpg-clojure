@@ -20,7 +20,6 @@
         btnFind     (JButton. "Find")
         btnLock     (JButton. "Lock Selected")
         btnUnlock   (JButton. "Unlock Selected")
-        d
         label       (JLabel. "Something" JLabel/CENTER)
         
         
