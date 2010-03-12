@@ -5,7 +5,7 @@
 )
 
 (defn interface
-  "Displays a simple GUI window using the Swing API."
+  "siiiiiiiiiiiiiiiiii"
   [title]
   (let [frame       (JFrame. title)
   
@@ -20,7 +20,7 @@
         btnFind     (JButton. "Find")
         btnLock     (JButton. "Lock Selected")
         btnUnlock   (JButton. "Unlock Selected")
-        
+        d
         label       (JLabel. "Something" JLabel/CENTER)
         
         
