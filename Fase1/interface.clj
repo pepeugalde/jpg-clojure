@@ -5,7 +5,7 @@
 )
 
 (defn interface
-  "siiiiiiiiiiiiiiiiii"
+  "nooooooooooooooooooooooooo"
   [title]
   (let [frame       (JFrame. title)
   
