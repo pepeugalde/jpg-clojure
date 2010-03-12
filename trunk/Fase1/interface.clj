@@ -13,7 +13,7 @@
         
         table       (JTable. )
   
-        benjamin    (JButton. "Push me")
+        benjamin    (JButton. "Push me =)")
         btnShowall  (JButton. "Show All")
         btnUpdate   (JButton. "Update")
         btnDelete   (JButton. "Delete")
