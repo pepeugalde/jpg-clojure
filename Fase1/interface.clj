@@ -31,17 +31,18 @@
         
         model (proxy [AbstractTableModel] [] 
         	(isCellEditable [row col] true)
-        	(getRowCount [] 10)
-        	(getColumnCount [] (get (read-bin-file "db-1x2.db") :num-fields))
-        	(getValueAt [row col] "")
+        	(getRowCount [] (count (get dict :records)))
+        	(getColumnCount [] (get dict :num-fields))
+        	(getValueAt [row col] (get (nth (get dict :records) row) (symbol (str ":" (first (nth (get dict :fields) col))))))
+            ;(getColumnName [col] (.toUpperCase (str (first (nth (get dict :fields) col)))))
         )
         
         counter     (ref 0)
         hdlBenjamin     (proxy [ActionListener][]
                        (actionPerformed [event]
-                       	       (dosync (alter counter inc))
+                       	 (dosync (alter counter inc))
                          (.setText label 
-                                (str (get dict :num-fields)) )))
+                                (str (get (nth (get dict :records) 0) (symbol ":rate"))))))
                                 
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
