@@ -12,11 +12,13 @@
 
 
 (defn interface
-  "nooooooooooooooooooooooooo"
+  "Displays the interface that will be uswd in the urlybird project"
   [title]
-  (let [frame       (JFrame. title)
+  (let [dict        (read-bin-file "db-1x2.db")
+  
+        frame       (JFrame. title)
         panel       (JPanel. )  
-        panel2       (JPanel. )  
+        panel2      (JPanel. )  
         table       (JTable. 10 6)
         benjamin    (JButton. "Push me =)")
         btnShowall  (JButton. "Show All")
@@ -27,23 +29,20 @@
         btnUnlock   (JButton. "Unlock Selected")
         label       (JLabel. "Something" JLabel/CENTER)
         
-        
-        
-        model (proxy[AbstractTableModel] [] 
+        model (proxy [AbstractTableModel] [] 
         	(isCellEditable [row col] true)
         	(getRowCount [] 10)
-        	(getColumnCount [] 10)
+        	(getColumnCount [] (get (read-bin-file "db-1x2.db") :num-fields))
         	(getValueAt [row col] "")
         )
-        	
-  
         
         counter     (ref 0)
         hdlBenjamin     (proxy [ActionListener][]
                        (actionPerformed [event]
                        	       (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (str (get dict :num-fields)) )))
+                                
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
@@ -74,8 +73,7 @@
                          (dosync (alter counter inc))
                          (.setText label 
                                 (str "Times pushed: " @counter))))]
-        
-        
+    ;;FIN LET
         
     ;
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
@@ -89,8 +87,10 @@
     
     
     (.setModel table model) 
-    (.set
     (.add panel2 table)
+    
+    (.add panel label)
+    
     (.add panel benjamin)
     (.add panel btnShowall)
     (.add panel btnUpdate)
@@ -117,13 +117,7 @@
     (.setSize frame 800 600)
     (.setModel table 5 5)
     
-    
- 
-    
-    
   )
-  
-  
   
 )
 
