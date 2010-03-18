@@ -2,12 +2,11 @@
 (:use db)
 
 )
-(import '(javax.swing JFrame JPanel JButton JLabel JTable)
+(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane)
         '(javax.swing.table AbstractTableModel)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout Dimension FlowLayout)
 )
-
 
 
 
@@ -19,7 +18,8 @@
         frame       (JFrame. title)
         panel       (JPanel. )  
         panel2      (JPanel. )  
-        table       (JTable. 10 6)
+        table       (JTable. )
+        scrollPane  (JScrollPane. table)
         benjamin    (JButton. "Push me =)")
         btnShowall  (JButton. "Show All")
         btnUpdate   (JButton. "Update")
@@ -27,14 +27,16 @@
         btnFind     (JButton. "Find")
         btnLock     (JButton. "Lock Selected")
         btnUnlock   (JButton. "Unlock Selected")
-        label       (JLabel. "Something" JLabel/CENTER)
+        label       (JLabel. "Something")
         
         model (proxy [AbstractTableModel] [] 
-        	(isCellEditable [row col] true)
-        	(getRowCount [] (count (get dict :records)))
-        	(getColumnCount [] (get dict :num-fields))
-        	(getValueAt [row col] (get (nth (get dict :records) row) (symbol (str ":" (first (nth (get dict :fields) col))))))
-            ;(getColumnName [col] (.toUpperCase (str (first (nth (get dict :fields) col)))))
+        	(isCellEditable [row col] true)                 ;All cells are editable
+        	(getRowCount [] (count (get dict :records)))    ;
+        	(getColumnCount [] (get dict :num-fields))      ;
+        	(getValueAt [row col]                           ;
+                    (get (nth (get dict :records) row) (keyword (str (first (nth (get dict :fields) col))))))
+            (getColumnName [col]                           ;
+                    (.toUpperCase (str (first (nth (get dict :fields) col)))))
         )
         
         counter     (ref 0)
@@ -42,33 +44,39 @@
                        (actionPerformed [event]
                        	 (dosync (alter counter inc))
                          (.setText label 
-                                (str (get (nth (get dict :records) 0) (symbol ":rate"))))))
+                                (str "COL NAME: " (.getColumnName table (rem @counter (get dict :num-fields)))) )))
                                 
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (str "CLASS: " (class(nth (get dict :records) (rem @counter (get dict :num-fields))))) )))
+                                
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (str "TUPLA: " (nth (get dict :records) (rem @counter(get dict :num-fields)))))))
+                                
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (str "PSEUDO: " (keyword (str(first (nth (get dict :fields) (rem @counter (get dict :num-fields))))))))))
+                                
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (get (nth (get dict :records) (rem @counter (get dict :num-fields))) :rate) )))
+                                
         hdlLock     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "Times pushed: " @counter))))
+                                (str "KEYS" (str(class(nth(keys (nth (get dict :records) (rem @counter (get dict :num-fields)) ))0)))))))
+                                
+                                
         hdlUnlock     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
@@ -82,15 +90,16 @@
     (.setLayout panel (new FlowLayout))
     (.setLayout frame (new FlowLayout))
     
-    (.setPreferredSize label (Dimension. 300 50))
+    (.setPreferredSize label (Dimension. 500 50))
     
     ;
     
+    (.setPreferredScrollableViewportSize table (Dimension. 500, 70))
+    (.setFillsViewportHeight table true)
     
-    (.setModel table model) 
+    
+    (.setModel table model)             ;throws Illegal Argument E WTF?
     (.add panel2 table)
-    
-    (.add panel label)
     
     (.add panel benjamin)
     (.add panel btnShowall)
@@ -102,6 +111,7 @@
     (.add frame panel)
     (.add frame panel2)
     
+    (.add frame BorderLayout/SOUTH label)
     
     ;(.add frame BorderLayout/CENTER table)
     
@@ -116,10 +126,8 @@
     (.pack frame)
     (.setVisible frame true)
     (.setSize frame 800 600)
-    (.setModel table 5 5)
-    
+    (.setModel table 5 5) 
   )
-  
 )
 
 (interface "Fase 1")
