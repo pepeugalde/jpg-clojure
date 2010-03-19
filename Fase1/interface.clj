@@ -1,13 +1,20 @@
 (ns interface
-(:use db)
-
-)
-(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane)
+(:require clojure.contrib.swing-utils)
+(:use db))
+(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox)
         '(javax.swing.table AbstractTableModel)
+        '(javax.swing.event TableModelListener)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
 )
 
+(defn get-col-names
+	"Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)"
+	[colpairs]
+	(to-array 
+		(vec (for [[coln _] colpairs] (.toUpperCase coln)) ) 
+	)
+)
 
 (defn interface
   "Displays the interface that will be uswd in the urlybird project"
@@ -16,20 +23,26 @@
         
         frameSizeX  800
         frameSizeY  600
-        tableSizeX  550
+        tableSizeX  500
         tableSizeY  400
+        buttonSizeX 50
+        buttonSizeY 150
         
         frame       (JFrame. title)
-        ;tPanel      (JPanel. )  
+        ;tPanel      (JPanel. )
+        fPanel      (JPanel. )
         bPanel      (JPanel. )  
         
-        benjamin    (JButton. "Push me =)")
+        benjamin    (JButton. "Push me =O")
         btnShowall  (JButton. "Show All")
         btnUpdate   (JButton. "Update")
         btnDelete   (JButton. "Delete")
         btnFind     (JButton. "Find")
         btnLock     (JButton. "Lock Selected")
         btnUnlock   (JButton. "Unlock Selected")
+        
+        searchField (JTextField. )
+        searchBox   (JComboBox. (get-col-names (get dict :fields)))
         
         label       (JLabel. "Something")
         
@@ -38,7 +51,18 @@
         table       (JTable. )
         tScrPane    (JScrollPane. table)
         
-        model (proxy [AbstractTableModel] [] 
+        tListener   (proxy [TableModelListener] []
+            (tableChanged [e]
+                    (.setText label "lol")
+                    ;(str "tableChanged(" (.getSource e) "), rowCount = " (.getRowCount (.getSource e))))
+             ;       (if (< 0 (.getRowCount (.getSource e)))
+              ;        (do-swing (preview-mode))
+               ;       (do-swing (init-mode)))
+            )
+            (columnMarginChanged [e] (.setText label "lol2"))
+        )
+        
+        model       (proxy [AbstractTableModel] [] 
         	(isCellEditable [row col] true)                 ;All cells are editable
         	(getRowCount [] (count (get dict :records)))    ;Gets number of rows from database
         	(getColumnCount [] (get dict :num-fields))      ;Gets number of cols from database
@@ -47,24 +71,29 @@
                     (.toUpperCase (str (first (nth (get dict :fields) col)))))
             ;;Uses column name as keyword to get value in row tuple
             (getValueAt [row col]                           ;
-                    (get (nth (get dict :records) row) (keyword (str (first (nth (get dict :fields) col))))))
+                    (get (nth (get dict :records) row) 
+                        (keyword (str (first (nth (get dict :fields) col))))))
         )
         
         hdlBenjamin     (proxy [ActionListener][]
                        (actionPerformed [event]
                        	 (dosync (alter counter inc))
                          (.setText label 
-                                (str "COL NAME: " (.getColumnName table (rem @counter (get dict :num-fields)))) )))                       
+                                (str "listeners: " (str (.getTableModelListeners model))) )))
+                                
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
-                         (.setText label 
-                                (str "CLASS: " (class(nth (get dict :records) (rem @counter (get dict :num-fields))))) )))
+                         (.setText searchField 
+                                (str (get dict :fields)))))
+                                
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
+                         (for [pair (get dict :fields)] (.addItem searchBox (.toUpperCase (str (first pair)))))
                          (.setText label 
-                                (str "TUPLA: " (nth (get dict :records) (rem @counter(get dict :num-fields)))))))
+                                (str "COLNAMS " (doall(take 5 (get-col-names (get dict :fields))))))))
+                                
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
@@ -91,43 +120,67 @@
         
     ;;;FRAME
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
-    (.setLayout frame (new FlowLayout))
+    (.setLayout frame (new BorderLayout))
     
     ;;;PANEL
     ;(.setLayout tPanel (new FlowLayout))
+    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
+    (.setLayout fPanel (new GridLayout 5 5))
+    (.setPreferredSize fPanel (Dimension. 245 200));(+ 45 (* buttonSizeY 3))))
+    
     (.setLayout bPanel (new GridLayout 10 2 15 15))
+    (.setPreferredSize bPanel (Dimension. 245 (- tableSizeY (+ 45 (* buttonSizeY 3)))))
+    
     ;(.setBackground tPanel (Color/yellow))
+    ;(.setBackground fPanel (Color/cyan))
     ;(.setBackground bPanel (Color/magenta))
+    
     
     ;;;TABLE
     (.setModel table model)
-    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
-    ;(.setPreferredSize table (Dimension. tableSizeX tableSizeY))
+    (.setPreferredSize table (Dimension. tableSizeX tableSizeY))
     (.setPreferredScrollableViewportSize table (Dimension. tableSizeX tableSizeY))
     (.setFillsViewportHeight table true)
     (.setPreferredSize tScrPane (Dimension. tableSizeX tableSizeY))
     
     ;;;BUTTON
+    (.setPreferredSize benjamin     (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnShowall   (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnUpdate    (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnDelete    (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnFind      (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnLock      (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize btnUnlock    (Dimension. buttonSizeX buttonSizeY))
+
+    ;;;TEXTFIELD
+    (.setPreferredSize searchField  (Dimension. buttonSizeX buttonSizeY))
+    
+    ;;;COMBOBOX
+    (.setPreferredSize searchBox    (Dimension. buttonSizeX buttonSizeY))
     
     ;;;LABEL
-    (.setPreferredSize label (Dimension. 500 25))
+    (.setPreferredSize label        (Dimension. frameSizeX 25))
     
     ;;;ADD
     ;(.add tPanel (.getTableHeader table) BorderLayout/NORTH)
     ;(.add tPanel tScrPane)
     ;(.add tPanel BorderLayout/SOUTH table)
     
+    (.add bPanel searchField)
+    (.add bPanel searchBox)
+    (.add bPanel btnFind)
+    
     (.add bPanel benjamin)
     (.add bPanel btnShowall)
     (.add bPanel btnUpdate)
     (.add bPanel btnDelete)
-    (.add bPanel btnFind)
     (.add bPanel btnLock)
     (.add bPanel btnUnlock)
     
-    (.add frame  tScrPane);tPanel)
-    (.add frame  bPanel)
-    (.add frame  label)
+    (.add frame BorderLayout/CENTER tScrPane)
+    ;(.add frame BorderLayout/EAST fPanel)
+    (.add frame BorderLayout/EAST bPanel)
+    (.add frame BorderLayout/PAGE_END label)
     ;(.add frame BorderLayout/CENTER table)
     
     ;;;ACTION LISTENERS
@@ -138,6 +191,7 @@
     (.addActionListener btnFind hdlFind)
     (.addActionListener btnLock hdlLock)
     (.addActionListener btnUnlock hdlUnlock)
+    (.addTableModelListener model tListener)
     
     (.pack frame)
     (.setVisible frame true)
