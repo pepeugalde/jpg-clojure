@@ -2,7 +2,7 @@
 (:require clojure.contrib.swing-utils)
 (:use db))
 (import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox)
-        '(javax.swing.table AbstractTableModel)
+        '(javax.swing.table DefaultTableModel)
         '(javax.swing.event TableModelListener)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
@@ -19,19 +19,21 @@
 (defn interface
   "Displays the interface that will be uswd in the urlybird project"
   [title]
-  (let [dict        (read-bin-file "db-1x2.db")
+  (let [fileName    "db-1x2.db"
+        dict        (read-bin-file fileName)
         
         frameSizeX  800
         frameSizeY  600
         tableSizeX  500
         tableSizeY  400
-        buttonSizeX 50
+        buttonSizeX 150
         buttonSizeY 150
         
         frame       (JFrame. title)
         ;tPanel      (JPanel. )
         fPanel      (JPanel. )
-        bPanel      (JPanel. )  
+        bPanel      (JPanel. )
+        abPanel      (JPanel. ) 
         
         benjamin    (JButton. "Push me =O")
         btnShowall  (JButton. "Show All")
@@ -47,6 +49,8 @@
         label       (JLabel. "Something")
         
         counter     (ref 0)
+        tRowN   (ref (count (get dict :records)))
+        tColN   (ref (get dict :num-fields))
         
         table       (JTable. )
         tScrPane    (JScrollPane. table)
@@ -61,44 +65,55 @@
             )
             (columnMarginChanged [e] (.setText label "lol2"))
         )
+
         
-        model       (proxy [AbstractTableModel] [] 
+        
+        model       (proxy [DefaultTableModel][]
         	(isCellEditable [row col] true)                 ;All cells are editable
-        	(getRowCount [] (count (get dict :records)))    ;Gets number of rows from database
-        	(getColumnCount [] (get dict :num-fields))      ;Gets number of cols from database
+            (getRowCount []    @tRowN)  ;Gets number of rows from database
+        	(getColumnCount [] @tColN)  ;Gets number of cols from database
         	;;Sets column names as the string in :fields vector
             (getColumnName [col]                            ;
-                    (.toUpperCase (str (first (nth (get dict :fields) col)))))
+                    (nth (vec (get-col-names (get dict :fields))) col))
             ;;Uses column name as keyword to get value in row tuple
-            (getValueAt [row col]                           ;
+            (getValueAt [row col]                           
                     (get (nth (get dict :records) row) 
-                        (keyword (str (first (nth (get dict :fields) col))))))
+                       (keyword (str (first (nth (get dict :fields) col))))))
         )
-        
+
         hdlBenjamin     (proxy [ActionListener][]
                        (actionPerformed [event]
                        	 (dosync (alter counter inc))
+                         (dosync (alter tRowN inc))
+                         (println @tRowN)
+                         (.addRow model (into-array (repeat (- (get dict :num-fields) 1) "ja")))
+                         
+                         (.setTableModel table model)
+                         (.repaint table)
                          (.setText label 
-                                (str "listeners: " (str (.getTableModelListeners model))) )))
+                                 (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])) )))
+                                ;(str  (get dict :fields)))))
+                                ;(str "listeners: " (str (.getTableModelListeners model))) )))
                                 
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
-                         (.setText searchField 
-                                (str (get dict :fields)))))
+                         (.setText label 
+                                (str(get dict :fields)))))
+                                ;(apply str(repeat 5 "ja")))))
                                 
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (for [pair (get dict :fields)] (.addItem searchBox (.toUpperCase (str (first pair)))))
                          (.setText label 
-                                (str "COLNAMS " (doall(take 5 (get-col-names (get dict :fields))))))))
+                                (str "COLNAMS " (vec(get-col-names (get dict :fields)))))))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "PSEUDO: " (keyword (str(first (nth (get dict :fields) (rem @counter (get dict :num-fields))))))))))
+                                (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])))))
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
@@ -108,7 +123,7 @@
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str "KEYS" (str(class(nth(keys (nth (get dict :records) (rem @counter (get dict :num-fields)) ))0)))))))
+                                (.setValueAt model "LOL" 0 0))))
                                 
                                 
         hdlUnlock     (proxy [ActionListener][]
@@ -129,7 +144,10 @@
     (.setPreferredSize fPanel (Dimension. 245 200));(+ 45 (* buttonSizeY 3))))
     
     (.setLayout bPanel (new GridLayout 10 2 15 15))
-    (.setPreferredSize bPanel (Dimension. 245 (- tableSizeY (+ 45 (* buttonSizeY 3)))))
+    (.setPreferredSize bPanel (Dimension. buttonSizeX (- tableSizeY (+ 45 (* buttonSizeY 3)))))
+    
+    (.setLayout abPanel (new GridLayout 5 5))
+    (.setPreferredSize abPanel (Dimension. 245 200));(+ 45 (* buttonSizeY 3))))
     
     ;(.setBackground tPanel (Color/yellow))
     ;(.setBackground fPanel (Color/cyan))
