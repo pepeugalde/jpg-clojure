@@ -1,12 +1,41 @@
 (ns interface
-(:require clojure.contrib.swing-utils)
-(:use db))
+    (:require clojure.contrib.swing-utils)
+    (:use dbread dbwrite dbsearch)
+)
 (import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox)
         '(javax.swing.table DefaultTableModel)
         '(javax.swing.event TableModelListener)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
 )
+
+;;GETS
+(defn get-magic
+    "Returns magic number from a database"
+    [db]
+    (get db :magic))
+
+(defn get-offset
+    "Returns offset from a database"
+    [db]
+    (get db :offset))  
+
+(defn get-num-fields
+    "Returns number of fields from a database"
+    [db]
+    (get db :num-fields))
+
+(defn get-fields
+    "Returns fields from a database"
+    [db]
+    ;(vec (for [f (db :fields)] f))
+    (get db :fields))  
+
+(defn get-records 
+    "Returns records from a database"
+    [db]
+    ;(vec (for [r (db :records)] r))
+    (get db :records))
 
 (defn get-col-names
 	"Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)"
@@ -17,23 +46,23 @@
 )
 
 (defn interface
-  "Displays the interface that will be uswd in the urlybird project"
+  "Displays the interface that will be used in the urlybird project"
   [title]
   (let [fileName    "db-1x2.db"
-        dict        (read-bin-file fileName)
+        database    (read-bin-file fileName)
         
         frameSizeX  800
         frameSizeY  600
         tableSizeX  500
         tableSizeY  400
-        buttonSizeX 150
-        buttonSizeY 150
+        btnSizeX    150
+        btnSizeY    150
         
         frame       (JFrame. title)
         ;tPanel      (JPanel. )
         fPanel      (JPanel. )
         bPanel      (JPanel. )
-        abPanel      (JPanel. ) 
+        abPanel     (JPanel. ) 
         
         benjamin    (JButton. "Push me =O")
         btnShowall  (JButton. "Show All")
@@ -44,13 +73,13 @@
         btnUnlock   (JButton. "Unlock Selected")
         
         searchField (JTextField. )
-        searchBox   (JComboBox. (get-col-names (get dict :fields)))
+        searchBox   (JComboBox. (get-col-names (get-fields database)))
         
         label       (JLabel. "Something")
         
         counter     (ref 0)
-        tRowN   (ref (count (get dict :records)))
-        tColN   (ref (get dict :num-fields))
+        tRowN       (ref (count (get-records database)))
+        tColN       (ref (get-num-fields database))
         
         table       (JTable. )
         tScrPane    (JScrollPane. table)
@@ -73,58 +102,59 @@
             (getRowCount []    @tRowN)  ;Gets number of rows from database
         	(getColumnCount [] @tColN)  ;Gets number of cols from database
         	;;Sets column names as the string in :fields vector
-            (getColumnName [col]                            ;
-                    (nth (vec (get-col-names (get dict :fields))) col))
+            (getColumnName [col]
+                    (nth (vec (get-col-names (get-fields database))) col))
             ;;Uses column name as keyword to get value in row tuple
-            (getValueAt [row col]                           
-                    (get (nth (get dict :records) row) 
-                       (keyword (str (first (nth (get dict :fields) col))))))
+            (getValueAt [row col]
+                    (get (nth (get-records database) row)
+                       (keyword (str (first (nth (get-fields database) col))))))
         )
 
-        hdlBenjamin     (proxy [ActionListener][]
+        hdlBenjamin    (proxy [ActionListener][]
                        (actionPerformed [event]
                        	 (dosync (alter counter inc))
                          (dosync (alter tRowN inc))
                          (println @tRowN)
-                         (.addRow model (into-array (repeat (- (get dict :num-fields) 1) "ja")))
+                         (.addRow model (into-array (repeat (- (get-num-fields database) 1) "ja")))
                          
                          (.setTableModel table model)
                          (.repaint table)
                          (.setText label 
                                  (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])) )))
-                                ;(str  (get dict :fields)))))
+                                ;(str  (get-fields database)))))
                                 ;(str "listeners: " (str (.getTableModelListeners model))) )))
                                 
         hdlShowall     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str(get dict :fields)))))
+                                (str(get-fields database)))))
                                 ;(apply str(repeat 5 "ja")))))
                                 
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
-                         (for [pair (get dict :fields)] (.addItem searchBox (.toUpperCase (str (first pair)))))
+                         (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
                          (.setText label 
-                                (str "COLNAMS " (vec(get-col-names (get dict :fields)))))))
+                                (str "COLNAMS " (vec(get-col-names (get-fields database)))))))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
                                 (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])))))
+                                
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (get (nth (get dict :records) (rem @counter (get dict :num-fields))) :rate) )))
+                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))
+                                
         hdlLock     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
                                 (.setValueAt model "LOL" 0 0))))
-                                
                                 
         hdlUnlock     (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -141,18 +171,17 @@
     ;(.setLayout tPanel (new FlowLayout))
     ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
     (.setLayout fPanel (new GridLayout 5 5))
-    (.setPreferredSize fPanel (Dimension. 245 200));(+ 45 (* buttonSizeY 3))))
+    (.setPreferredSize fPanel (Dimension. 245 200));(+ 45 (* btnSizeY 3))))
     
     (.setLayout bPanel (new GridLayout 10 2 15 15))
-    (.setPreferredSize bPanel (Dimension. buttonSizeX (- tableSizeY (+ 45 (* buttonSizeY 3)))))
+    (.setPreferredSize bPanel (Dimension. btnSizeX (- tableSizeY (+ 45 (* btnSizeY 3)))))
     
     (.setLayout abPanel (new GridLayout 5 5))
-    (.setPreferredSize abPanel (Dimension. 245 200));(+ 45 (* buttonSizeY 3))))
+    (.setPreferredSize abPanel (Dimension. 245 200));(+ 45 (* btnSizeY 3))))
     
     ;(.setBackground tPanel (Color/yellow))
     ;(.setBackground fPanel (Color/cyan))
     ;(.setBackground bPanel (Color/magenta))
-    
     
     ;;;TABLE
     (.setModel table model)
@@ -162,19 +191,19 @@
     (.setPreferredSize tScrPane (Dimension. tableSizeX tableSizeY))
     
     ;;;BUTTON
-    (.setPreferredSize benjamin     (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnShowall   (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnUpdate    (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnDelete    (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnFind      (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnLock      (Dimension. buttonSizeX buttonSizeY))
-    (.setPreferredSize btnUnlock    (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize benjamin     (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnShowall   (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnUpdate    (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnDelete    (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnFind      (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnLock      (Dimension. btnSizeX btnSizeY))
+    (.setPreferredSize btnUnlock    (Dimension. btnSizeX btnSizeY))
 
     ;;;TEXTFIELD
-    (.setPreferredSize searchField  (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize searchField  (Dimension. btnSizeX btnSizeY))
     
     ;;;COMBOBOX
-    (.setPreferredSize searchBox    (Dimension. buttonSizeX buttonSizeY))
+    (.setPreferredSize searchBox    (Dimension. btnSizeX btnSizeY))
     
     ;;;LABEL
     (.setPreferredSize label        (Dimension. frameSizeX 25))
