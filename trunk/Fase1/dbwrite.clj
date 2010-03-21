@@ -65,28 +65,40 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn str-from-b-seq [coll] (reduce str (map char coll)))
+
 ;-------------------------------------------------------------------------------
 (defn set-pad
   "Sets the padding for a new row"
   [data numbytes]
-  (let [missing (- numbytes (.length (str data)))
-  	databytes (concat (str data) (apply str(repeat missing " ")))]
-  (.getBytes (str databytes))
+  (let [missing     (- numbytes (.length (str data)))
+        paddeddata   (concat data (apply str(repeat missing " ")))]
+    ;(println (str "----------"))
+    ;(println (str "recibo: " data " de " numbytes))
+    ;(println (str "missing: " missing))
+    ;(println (str "length: " data " " (.length (str data))))
+    ;(println (str "paddeddata: " (str"."(apply str paddeddata) ".")))
+    ;(println (str "string: " (str-from-b-seq (.getBytes (apply str paddeddata)))))
+    ;(println (str "__________"))
+    (.getBytes (apply str paddeddata))
   )
 )
 ;-------------------------------------------------------------------------------
 (defn new-row
-"Inserts new registers into the database"
- [file-name info]
- (with-open [printer (FileOutputStream. file-name false)]
-   (let [data (for [[data padding] info] (set-pad data padding))]
-     (.write printer (first data))
-     (println (first data))
+  "Inserts new registers into the database"
+  [file-name info]
+  (with-open [printer (FileOutputStream. file-name false)]
+    (let [padded (for [[data numbytes] info] (set-pad data numbytes))]
+      (doall (for [p padded] (.write printer  p)))
+      (.flush printer)
     )
   )
 )
 ;-------------------------------------------------------------------------------
 ;;;;;;;;;;TEST
-(new-row "lol.txt" [["lol" 6] ["ja" 10] ["k" 8]])
+(defn str-from-b-seq [coll] (reduce str (map char coll)))
+;(str-from-b-seq (byte-array [(byte 0x72) (byte 0x75) (byte 0x78)]));(set-pad "lol" 6))
+;(str-from-b-seq (set-pad "wat" 4))
 
-;(string-from-byte-sequence (set-pad "lol" 6))
+(new-row "lol.txt" [["name" 64] ["location" 64] ["size" 4] ["rate" 8]])
+;(set-pad "wat" 4)
