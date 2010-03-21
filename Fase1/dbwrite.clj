@@ -73,32 +73,30 @@
   [data numbytes]
   (let [missing     (- numbytes (.length (str data)))
         paddeddata   (concat data (apply str(repeat missing " ")))]
-    ;(println (str "----------"))
-    ;(println (str "recibo: " data " de " numbytes))
-    ;(println (str "missing: " missing))
-    ;(println (str "length: " data " " (.length (str data))))
-    ;(println (str "paddeddata: " (str"."(apply str paddeddata) ".")))
-    ;(println (str "string: " (str-from-b-seq (.getBytes (apply str paddeddata)))))
-    ;(println (str "__________"))
     (.getBytes (apply str paddeddata))
   )
 )
 ;-------------------------------------------------------------------------------
-(defn new-row
+(defn write-new-row
   "Inserts new registers into the database"
-  [file-name info]
-  (with-open [printer (FileOutputStream. file-name true)]
-    (let [padded (for [[data numbytes] info] (set-pad data numbytes))]
-      (doall (for [p padded] (.write printer  p)))
-      (.flush printer)
+  [file-name infos sizes]
+  (with-open [printer (FileOutputStream. file-name true)]  
+    (.write printer (byte-array [(byte 0x00)(byte 0x00)]))
+    (loop [info infos size sizes]
+      (if (empty? info)
+        ()
+        (do (.write printer (set-pad (first info) (first size)))
+            (recur (rest info) (rest size))
+        )
+      )
     )
+    (.flush printer)
   )
+  (println "ROW ADDED")
 )
 ;-------------------------------------------------------------------------------
 ;;;;;;;;;;TEST
-(defn str-from-b-seq [coll] (reduce str (map char coll)))
 ;(str-from-b-seq (byte-array [(byte 0x72) (byte 0x75) (byte 0x78)]));(set-pad "lol" 6))
 ;(str-from-b-seq (set-pad "wat" 4))
-
-(new-row "lol.txt" [["name" 64] ["location" 64] ["size" 4] ["rate" 8]])
+;(write-new-row "lol.db" ["name" "location" "size" "rate"] [64 64 4 8])
 ;(set-pad "wat" 4)

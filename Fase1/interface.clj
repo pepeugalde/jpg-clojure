@@ -28,28 +28,31 @@
 (defn get-fields
     "Returns fields from a database"
     [db]
-    ;(vec (for [f (db :fields)] f))
     (get db :fields))  
 
 (defn get-records 
     "Returns records from a database"
     [db]
-    ;(vec (for [r (db :records)] r))
     (get db :records))
 
 (defn get-col-names
 	"Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)"
-	[colpairs]
-	(to-array 
-		(vec (for [[coln _] colpairs] (.toUpperCase coln)) ) 
-	)
+	[db]
+	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln)))
+)
+
+(defn get-field-lengths
+	"Returns a vector containing field lengths"
+	[db]
+	(vec (for [[_ len] (get db :fields)] len))
 )
 
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
-  (let [fileName    "db-1x2.db"
-        database    (read-bin-file fileName)
+  (let [filename    "db-1x2.db"
+        testfilename "lol.db"
+        database    (read-bin-file filename)
         
         frameSizeX  800
         frameSizeY  600
@@ -66,6 +69,7 @@
         
         benjamin    (JButton. "Push me =O")
         btnShowall  (JButton. "Show All")
+        btnAdd      (JButton. "Add new row")
         btnUpdate   (JButton. "Update")
         btnDelete   (JButton. "Delete")
         btnFind     (JButton. "Find")
@@ -73,7 +77,7 @@
         btnUnlock   (JButton. "Unlock Selected")
         
         searchField (JTextField. )
-        searchBox   (JComboBox. (get-col-names (get-fields database)))
+        searchBox   (JComboBox. (to-array (get-col-names database)))
         
         label       (JLabel. "Something")
         
@@ -100,10 +104,10 @@
         model       (proxy [DefaultTableModel][]
         	(isCellEditable [row col] true)                 ;All cells are editable
             (getRowCount []    @tRowN)  ;Gets number of rows from database
-        	(getColumnCount [] @tColN)  ;Gets number of cols from database
+            (getColumnCount [] @tColN)  ;Gets number of cols from database
         	;;Sets column names as the string in :fields vector
             (getColumnName [col]
-                    (nth (vec (get-col-names (get-fields database))) col))
+                    (nth (get-col-names database) col))
             ;;Uses column name as keyword to get value in row tuple
             (getValueAt [row col]
                     (get (nth (get-records database) row)
@@ -111,7 +115,7 @@
         )
 
         hdlBenjamin    (proxy [ActionListener][]
-                       (actionPerformed [event]
+                        (actionPerformed [event]
                        	 (dosync (alter counter inc))
                          (dosync (alter tRowN inc))
                          (println @tRowN)
@@ -121,22 +125,25 @@
                          (.repaint table)
                          (.setText label 
                                  (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])) )))
-                                ;(str  (get-fields database)))))
-                                ;(str "listeners: " (str (.getTableModelListeners model))) )))
                                 
-        hdlShowall     (proxy [ActionListener][]
+        hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (str(get-fields database)))))
-                                ;(apply str(repeat 5 "ja")))))
-                                
+                                (str(get-field-lengths database)))))
+
+        hdlAdd        (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (println "adding...")
+                         (do (write-new-row testfilename
+                                  ["La Jornada" "Aqui" "4" "N" "$1.00" "2000/01/01" ""] (get-field-lengths database)))))
+
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
                          (.setText label 
-                                (str "COLNAMS " (vec(get-col-names (get-fields database)))))))
+                                (str "COLNAMS " (get-col-names database)))))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -198,7 +205,10 @@
     (.setPreferredSize btnFind      (Dimension. btnSizeX btnSizeY))
     (.setPreferredSize btnLock      (Dimension. btnSizeX btnSizeY))
     (.setPreferredSize btnUnlock    (Dimension. btnSizeX btnSizeY))
-
+      ;;enable
+    ;(.setEnabled btnAdd false)
+    
+    
     ;;;TEXTFIELD
     (.setPreferredSize searchField  (Dimension. btnSizeX btnSizeY))
     
@@ -219,6 +229,7 @@
     
     (.add bPanel benjamin)
     (.add bPanel btnShowall)
+    (.add bPanel btnAdd)
     (.add bPanel btnUpdate)
     (.add bPanel btnDelete)
     (.add bPanel btnLock)
@@ -233,6 +244,7 @@
     ;;;ACTION LISTENERS
     (.addActionListener benjamin hdlBenjamin)
     (.addActionListener btnShowall hdlShowall)
+    (.addActionListener btnAdd hdlAdd)
     (.addActionListener btnUpdate hdlUpdate)
     (.addActionListener btnDelete hdlDelete)
     (.addActionListener btnFind hdlFind)
