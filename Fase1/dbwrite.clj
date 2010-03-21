@@ -1,17 +1,12 @@
-(ns db
+(ns dbwrite
     "This namespace contains functions that demonstrate how to read a binary 
     file. It specifically allows reading the URLyBird database file."  
-    (:import (java.io FileInputStream DataInputStream)))
+    (:import (java.io FileOutputStream DataOutputStream PrintStream BufferedWriter FileWriter PrintWriter  
+                    FileInputStream DataInputStream))
+    (:use dbread dbwrite dbsearch))
 
-;-------------------------------------------------------------------------------
-;;; Uncomment this function if using Clojure 1.1 Alpha
-;(defn byte-array 
-;  "Return an array of byte primitives of size n."
-;  [n]
-;  (make-array Byte/TYPE n))
-
-;-------------------------------------------------------------------------------
-(defn read-str-len
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn read-str-len2
   "Read the next n bytes from file and create a string."
   [file n]
   (let [barray (byte-array n)]
@@ -19,7 +14,7 @@
     (String. barray)))
          
 ;-------------------------------------------------------------------------------
-(defn read-fields-meta
+(defn read-fields-meta2
   "Reads the meta-data of all the fields from the given file. You must specify 
   the total number of fields."
   [file num-fields]
@@ -33,7 +28,7 @@
              (recur (dec n) (conj resultado [field-name field-len]))))))                                     
 
 ;-------------------------------------------------------------------------------
-(defn read-one-record
+(defn read-one-record2
   "Reads one individual record from the given file. You must specify a vector 
   with the fields' meta-data."
   [file fields]
@@ -46,7 +41,7 @@
          result)))          
 
 ;-------------------------------------------------------------------------------
-(defn read-records
+(defn read-records2
   "Reads all the individual records of the file."
   [file fields]
   (loop 
@@ -56,7 +51,7 @@
         (recur (conj result (read-one-record file fields))))))
     
 ;-------------------------------------------------------------------------------
-(defn read-bin-file
+(defn read-bin-file2
   "Reads a binary file and returns a vector with its information."
   [file-name]
   (with-open [file (DataInputStream. (FileInputStream. file-name))]
@@ -67,3 +62,31 @@
           records      (read-records file fields-meta)]
       {:magic magic-number :offset offset :num-fields num-fields 
        :fields fields-meta :records records})))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;-------------------------------------------------------------------------------
+(defn set-pad
+  "Sets the padding for a new row"
+  [data numbytes]
+  (let [missing (- numbytes (.length (str data)))
+  	databytes (concat (str data) (apply str(repeat missing " ")))]
+  (.getBytes (str databytes))
+  )
+)
+;-------------------------------------------------------------------------------
+(defn new-row
+"Inserts new registers into the database"
+ [file-name info]
+ (with-open [printer (FileOutputStream. file-name false)]
+   (let [data (for [[data padding] info] (set-pad data padding))]
+     (.write printer (first data))
+     (println (first data))
+    )
+  )
+)
+;-------------------------------------------------------------------------------
+;;;;;;;;;;TEST
+(new-row "lol.txt" [["lol" 6] ["ja" 10] ["k" 8]])
+
+;(string-from-byte-sequence (set-pad "lol" 6))
