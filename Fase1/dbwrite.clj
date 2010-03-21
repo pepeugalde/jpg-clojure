@@ -87,7 +87,7 @@
 (defn new-row
   "Inserts new registers into the database"
   [file-name info]
-  (with-open [printer (FileOutputStream. file-name false)]
+  (with-open [printer (FileOutputStream. file-name true)]
     (let [padded (for [[data numbytes] info] (set-pad data numbytes))]
       (doall (for [p padded] (.write printer  p)))
       (.flush printer)
