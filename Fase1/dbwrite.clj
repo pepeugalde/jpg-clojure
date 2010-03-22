@@ -2,7 +2,7 @@
     "This namespace contains functions that demonstrate how to read a binary 
     file. It specifically allows reading the URLyBird database file."  
     (:import (java.io FileOutputStream DataOutputStream PrintStream BufferedWriter FileWriter PrintWriter  
-                    FileInputStream DataInputStream))
+                    FileInputStream DataInputStream RandomAccessFile))
     (:use dbread dbwrite dbsearch))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -81,7 +81,7 @@
   "Inserts new registers into the database"
   [file-name infos sizes]
   (with-open [printer (FileOutputStream. file-name true)]  
-    (.write printer (byte-array [(byte 0x00)(byte 0x00)]))
+    (.write printer (byte-array [(byte 0x0000)(byte 0x0000)]))
     (loop [info infos size sizes]
       (if (empty? info)
         ()
@@ -95,8 +95,61 @@
   (println "ROW ADDED")
 )
 ;-------------------------------------------------------------------------------
+(defn set-del-flag2
+  "Sets to 0x8000 the :deleted flag"
+  [file-name offset]
+  (with-open [writer  (DataOutputStream. (FileOutputStream. file-name true))] 
+    (.write writer (byte-array [(byte 0x80)(byte 0x00)]) 0 2)
+    (.flush writer)
+  )
+)
+(defn set-del-flag
+  "Sets to 0x8000 the :deleted flag"
+  [file-name offset]
+  (with-open [writer  (RandomAccessFile. file-name "rw")] 
+    (.skipBytes writer offset)
+    (.write writer (byte-array [(byte 0x80)(byte 0x00)]) 0 2);offset 2)
+  )
+)
+;-------------------------------------------------------------------------------
+(defn delete-record
+  "Deletes a record by changing its flag"
+  [file-name delrow offset rowlen]
+  (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
+    (.skipBytes reader offset)
+    (loop [valrow 0 realrow 0]
+      (if (= 0 (.readShort reader))
+          (do (println "row " valrow " existe, se cuenta")
+              (if (= valrow delrow)
+              ;(if (.contains delrows valrow)
+                  (do(println "se sobreescribe en byte " (+ offset (* realrow (+ 2 rowlen))))
+                     (println "valrow " valrow " realrow " realrow)
+                     ;(println (char (.readByte reader)))
+                     ;(println (char (.readByte reader)))
+                     ;(println (char (.readByte reader)))
+                     ;(println (char (.readByte reader)))
+                     (set-del-flag file-name (+ offset (* realrow (+ 2 rowlen))))
+
+                     ;(.skipBytes reader rowlen)
+                     ;(recur (inc valrow) (inc realrow))
+                  )
+                  (do (.skipBytes reader rowlen)
+                      (recur (inc valrow) (inc realrow)))
+              )
+          )
+          (do (println "row " valrow " borrada, no cuenta")
+              (.skipBytes reader rowlen)
+              (recur valrow (inc realrow))
+          )
+      )
+    )
+  )
+  (println "ROW DELETED")
+)
+;-------------------------------------------------------------------------------
 ;;;;;;;;;;TEST
 ;(str-from-b-seq (byte-array [(byte 0x72) (byte 0x75) (byte 0x78)]));(set-pad "lol" 6))
 ;(str-from-b-seq (set-pad "wat" 4))
-;(write-new-row "lol.db" ["name" "location" "size" "rate"] [64 64 4 8])
+;(write-new-row "lol - copia.db" ["name" "location" "size" "rate"] [64 64 4 8])
+;(delete-record "lol - copia.db" 0 74 159)
 ;(set-pad "wat" 4)
