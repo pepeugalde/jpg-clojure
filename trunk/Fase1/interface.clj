@@ -50,16 +50,18 @@
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
-  (let [filename    "db-1x2.db"
+  (let [filename     "db-1x2 - copia.db";"db-1x2.db"
         testfilename "lol.db"
         database    (read-bin-file filename)
         
-        frameSizeX  800
-        frameSizeY  600
-        tableSizeX  500
-        tableSizeY  400
-        btnSizeX    150
-        btnSizeY    150
+        windowSX  800
+        windowSY  600
+        labelH    25
+        btnSX     150
+        btnSY     30
+        tableSX   (- windowSX (+ 30 btnSX))
+        tableSY   (- windowSY labelH)
+        
         
         frame       (JFrame. title)
         ;tPanel      (JPanel. )
@@ -123,8 +125,8 @@
                          
                          (.setTableModel table model)
                          (.repaint table)
-                         (.setText label 
-                                 (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])) )))
+                         (.setText label
+                                (str (get-fields database)) )))
                                 
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -143,13 +145,12 @@
                          (dosync (alter counter inc))
                          (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
                          (.setText label 
-                                (str "COLNAMS " (get-col-names database)))))
+                                (str (get-records database)))))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
-                         (.setText label 
-                                (str(to-array-2d [[1 2 3] [4 5 6] [7 8 9]])))))
+                         (delete-record "db-1x2 - copia.db" 0 (get-offset database) (apply + (get-field-lengths database)))))
                                 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -161,71 +162,75 @@
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          (.setText label 
-                                (.setValueAt model "LOL" 0 0))))
+                                (str (.getValueAt model 0 0) (.getValueAt model 0 1) (.getValueAt model 0 2)))))
                                 
         hdlUnlock     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
-                         (.setText label 
+                         (.setText label
                                 (str "Times pushed: " @counter))))]
     ;;;;;;;;;;;;; END LET
         
-    ;;;FRAME
+;;;;;;;FRAME
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
     (.setLayout frame (new BorderLayout))
     
-    ;;;PANEL
-    ;(.setLayout tPanel (new FlowLayout))
+;;;;;;;PANEL
+    ;(.setLayout         tPanel (new FlowLayout))
     ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
-    (.setLayout fPanel (new GridLayout 5 5))
-    (.setPreferredSize fPanel (Dimension. 245 200));(+ 45 (* btnSizeY 3))))
     
-    (.setLayout bPanel (new GridLayout 10 2 15 15))
-    (.setPreferredSize bPanel (Dimension. btnSizeX (- tableSizeY (+ 45 (* btnSizeY 3)))))
+    (.setLayout         fPanel (new FlowLayout))
+    (.setPreferredSize  fPanel (Dimension. (+ 20 btnSX) (+ 20 (* 3 btnSY))))
     
-    (.setLayout abPanel (new GridLayout 5 5))
-    (.setPreferredSize abPanel (Dimension. 245 200));(+ 45 (* btnSizeY 3))))
+    (.setLayout         bPanel (new FlowLayout))
+    (.setPreferredSize  bPanel (Dimension. (+ 20 btnSX) (- tableSY (+ 20(* btnSY 3)))))
     
-    ;(.setBackground tPanel (Color/yellow))
-    ;(.setBackground fPanel (Color/cyan))
-    ;(.setBackground bPanel (Color/magenta))
+    (.setLayout         abPanel (new FlowLayout))
+    (.setPreferredSize  abPanel (Dimension. (+ 20 btnSX) tableSY))
     
-    ;;;TABLE
+    ;(.setBackground     tPanel  (Color/yellow))
+    ;(.setBackground     fPanel  (Color/cyan))
+    ;(.setBackground     bPanel  (Color/magenta))
+    ;(.setBackground     abPanel (Color/black))
+    
+    
+;;;;;;;TABLE
     (.setModel table model)
-    (.setPreferredSize table (Dimension. tableSizeX tableSizeY))
-    (.setPreferredScrollableViewportSize table (Dimension. tableSizeX tableSizeY))
+    (.setPreferredSize table (Dimension. tableSX tableSY))
+    (.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
     (.setFillsViewportHeight table true)
-    (.setPreferredSize tScrPane (Dimension. tableSizeX tableSizeY))
+    (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
     
-    ;;;BUTTON
-    (.setPreferredSize benjamin     (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnShowall   (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnUpdate    (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnDelete    (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnFind      (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnLock      (Dimension. btnSizeX btnSizeY))
-    (.setPreferredSize btnUnlock    (Dimension. btnSizeX btnSizeY))
+;;;;;;;BUTTON
+    (.setPreferredSize benjamin     (Dimension. btnSX btnSY))
+    (.setPreferredSize btnShowall   (Dimension. btnSX btnSY))
+    (.setPreferredSize btnAdd       (Dimension. btnSX btnSY))
+    (.setPreferredSize btnUpdate    (Dimension. btnSX btnSY))
+    (.setPreferredSize btnDelete    (Dimension. btnSX btnSY))
+    (.setPreferredSize btnFind      (Dimension. btnSX btnSY))
+    (.setPreferredSize btnLock      (Dimension. btnSX btnSY))
+    (.setPreferredSize btnUnlock    (Dimension. btnSX btnSY))
       ;;enable
     ;(.setEnabled btnAdd false)
     
     
-    ;;;TEXTFIELD
-    (.setPreferredSize searchField  (Dimension. btnSizeX btnSizeY))
+;;;;;;;TEXTFIELD
+    (.setPreferredSize searchField  (Dimension. btnSX btnSY))
     
-    ;;;COMBOBOX
-    (.setPreferredSize searchBox    (Dimension. btnSizeX btnSizeY))
+;;;;;;;COMBOBOX
+    (.setPreferredSize searchBox    (Dimension. btnSX btnSY))
     
-    ;;;LABEL
-    (.setPreferredSize label        (Dimension. frameSizeX 25))
+;;;;;;;LABEL
+    (.setPreferredSize label        (Dimension. windowSX 25))
     
-    ;;;ADD
+;;;;;;;ADDS
     ;(.add tPanel (.getTableHeader table) BorderLayout/NORTH)
     ;(.add tPanel tScrPane)
     ;(.add tPanel BorderLayout/SOUTH table)
     
-    (.add bPanel searchField)
-    (.add bPanel searchBox)
-    (.add bPanel btnFind)
+    (.add fPanel BorderLayout/NORTH searchField)
+    (.add fPanel BorderLayout/CENTER searchBox)
+    (.add fPanel BorderLayout/SOUTH btnFind)
     
     (.add bPanel benjamin)
     (.add bPanel btnShowall)
@@ -235,11 +240,12 @@
     (.add bPanel btnLock)
     (.add bPanel btnUnlock)
     
+    (.add abPanel BorderLayout/NORTH fPanel)
+    (.add abPanel BorderLayout/SOUTH bPanel)
+    
     (.add frame BorderLayout/CENTER tScrPane)
-    ;(.add frame BorderLayout/EAST fPanel)
-    (.add frame BorderLayout/EAST bPanel)
+    (.add frame BorderLayout/EAST abPanel)
     (.add frame BorderLayout/PAGE_END label)
-    ;(.add frame BorderLayout/CENTER table)
     
     ;;;ACTION LISTENERS
     (.addActionListener benjamin hdlBenjamin)
@@ -254,7 +260,7 @@
     
     (.pack frame)
     (.setVisible frame true)
-    (.setSize frame frameSizeX frameSizeY)
+    (.setSize frame windowSX windowSY)
   )
 )
 
