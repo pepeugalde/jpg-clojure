@@ -1,7 +1,8 @@
 (ns dbread
     "This namespace contains functions that demonstrate how to read a binary 
     file. It specifically allows reading the URLyBird database file."  
-    (:import (java.io FileInputStream DataInputStream)))
+    (:import (java.io FileInputStream DataInputStream))
+    (:require clojure.test))
 
 ;-------------------------------------------------------------------------------
 ;;; Uncomment this function if using Clojure 1.1 Alpha
@@ -39,6 +40,7 @@
   [file fields]
   (loop 
     [result {:deleted (not (zero? (.readShort file)))}
+    
      [[fname fsize] & rest-fields] fields]
      (if fname
          (recur (assoc result (keyword fname) (.trim (read-str-len file fsize)))
@@ -59,6 +61,7 @@
 (defn read-bin-file
   "Reads a binary file and returns a vector with its information."
   [file-name]
+  
   (with-open [file (DataInputStream. (FileInputStream. file-name))]
     (let [magic-number (.readInt file)
           offset       (.readInt file)
@@ -66,4 +69,5 @@
           fields-meta  (read-fields-meta file num-fields)
           records      (read-records file fields-meta)]
       {:magic magic-number :offset offset :num-fields num-fields 
-       :fields fields-meta :records records})))
+       :fields fields-meta :records records}))
+       )
