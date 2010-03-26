@@ -103,6 +103,7 @@
     (.flush writer)
   )
 )
+;-------------------------------------------------------------------------------
 (defn set-del-flag
   "Sets to 0x8000 the :deleted flag"
   [file-name offset]
@@ -112,8 +113,8 @@
   )
 )
 ;-------------------------------------------------------------------------------
-(defn delete-record
-  "Deletes a record by changing its flag"
+(defn delete-record-skip-deleted
+  "Deletes a record by changing its flag, doesnt count deleted records"
   [file-name delrow offset rowlen]
   (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
     (.skipBytes reader offset)
@@ -142,6 +143,25 @@
               (recur valrow (inc realrow))
           )
       )
+    )
+  )
+  (println "ROW DELETED")
+)
+;-------------------------------------------------------------------------------
+(defn delete-record
+  "Deletes a record by changing its flag, counts deleted records"
+  [file-name delrow offset rowlen]
+  (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
+    (.skipBytes reader offset)
+    (loop [realrow 0]
+        (if (= realrow delrow)
+            (do(println "se sobreescribe en byte " (+ offset (* realrow (+ 2 rowlen))))
+               (println " realrow " realrow)
+               (set-del-flag file-name (+ offset (* realrow (+ 2 rowlen))))
+            )
+            (do (.skipBytes reader rowlen)
+                (recur (inc realrow)))
+        )
     )
   )
   (println "ROW DELETED")

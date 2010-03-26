@@ -2,12 +2,17 @@
     (:require clojure.contrib.swing-utils)
     (:use dbread dbwrite dbsearch)
 )
-(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox)
-        '(javax.swing.table DefaultTableModel)
+(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter)
+        '(javax.swing.table DefaultTableModel TableRowSorter)
         '(javax.swing.event TableModelListener)
         '(java.awt.event ActionListener)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
 )
+
+(defn find-data
+  "Finds specified data" 
+  [sstring column list] 
+  (filter #(= ((keyword column) %) sstring) list))
 
 ;;GETS
 (defn get-magic
@@ -38,45 +43,69 @@
 (defn get-col-names
 	"Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)"
 	[db]
-	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln)))
-)
+	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln))))
 
 (defn get-field-lengths
 	"Returns a vector containing field lengths"
 	[db]
-	(vec (for [[_ len] (get db :fields)] len))
+	(vec (for [[_ len] (get db :fields)] len)))
+
+  
+(defn fliplr
+  "Flips an array horizontally"
+  [arr]
+  arr
 )
+  
+(defn records-to-array
+  "Transforms record dictionary into a 2d array"
+  [records]
+  (fliplr (to-array-2d records))
+;  (let [array []]
+;    (for [tuple records]
+;      
+;      (print (loop [filteredrow []   ituple tuple]
+;        (if (empty? ituple)
+; 
+; (filteredrow)
+;          (recur (conj filteredrow (str(first ituple)))(rest ituple))
+;        )
+;      ))
+;      
+;    )
+;  )
+)
+
+(def table          (JTable. ))
 
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
   (let [filename     "db-1x2 - copia.db";"db-1x2.db"
-        testfilename "lol.db"
-        database    (read-bin-file filename)
+        testfilename "db-1x2 - copia.db"
+        database     (read-bin-file filename)
         
-        windowSX  800
-        windowSY  600
-        labelH    25
-        btnSX     150
-        btnSY     30
-        tableSX   (- windowSX (+ 30 btnSX))
-        tableSY   (- windowSY labelH)
+        datamatrix   (agent (records-to-array (get-records database)))
         
+        windowSX     800
+        windowSY     600
+        labelH       25
+        btnSX        150
+        btnSY        30
+        tableSX      (- windowSX (+ 30 btnSX))
+        tableSY      (- windowSY labelH)
         
         frame       (JFrame. title)
-        ;tPanel      (JPanel. )
+        hPanel      (JPanel. )
         fPanel      (JPanel. )
         bPanel      (JPanel. )
-        abPanel     (JPanel. ) 
+        abPanel     (JPanel. )
         
-        benjamin    (JButton. "Push me =O")
         btnShowall  (JButton. "Show All")
         btnAdd      (JButton. "Add new row")
         btnUpdate   (JButton. "Update")
         btnDelete   (JButton. "Delete")
         btnFind     (JButton. "Find")
-        btnLock     (JButton. "Lock Selected")
-        btnUnlock   (JButton. "Unlock Selected")
         
         searchField (JTextField. )
         searchBox   (JComboBox. (to-array (get-col-names database)))
@@ -86,89 +115,77 @@
         counter     (ref 0)
         tRowN       (ref (count (get-records database)))
         tColN       (ref (get-num-fields database))
-        
-        table       (JTable. )
+
         tScrPane    (JScrollPane. table)
         
         tListener   (proxy [TableModelListener] []
-            (tableChanged [e]
-                    (.setText label "lol")
-                    ;(str "tableChanged(" (.getSource e) "), rowCount = " (.getRowCount (.getSource e))))
-             ;       (if (< 0 (.getRowCount (.getSource e)))
-              ;        (do-swing (preview-mode))
-               ;       (do-swing (init-mode)))
+
+        )
+        
+        model       (proxy [DefaultTableModel][@datamatrix (into-array(get-col-names database))]
+        	  (isCellEditable [row col] true)                 ;All cells are editable
+        )
+        
+        colFilter   (proxy [RowFilter][]
+            (include [entry filters]
+                (loop [i 0  result true]
+                    (if (< i (count filters))
+                        (if (and (result) (not (= "" (nth filter i))))
+                            (recur (inc i) (.startsWith (.toString (.getValue entry i)) (nth filters i)))
+                            ())
+                        (result)
+                    )
+                )
+        
+                ;for (int i = 0; i < filters.length; i++) (
+                ;    if (result && !(filters[i].equals("")) ) (
+                ;        String v = entry.getValue(i).toString();
+                ;        result =  v.startsWith(filters[i]);
+                ;    )
+                ;)
             )
-            (columnMarginChanged [e] (.setText label "lol2"))
         )
-
         
         
-        model       (proxy [DefaultTableModel][]
-        	(isCellEditable [row col] true)                 ;All cells are editable
-            (getRowCount []    @tRowN)  ;Gets number of rows from database
-            (getColumnCount [] @tColN)  ;Gets number of cols from database
-        	;;Sets column names as the string in :fields vector
-            (getColumnName [col]
-                    (nth (get-col-names database) col))
-            ;;Uses column name as keyword to get value in row tuple
-            (getValueAt [row col]
-                    (get (nth (get-records database) row)
-                       (keyword (str (first (nth (get-fields database) col))))))
-        )
-
-        hdlBenjamin    (proxy [ActionListener][]
-                        (actionPerformed [event]
-                       	 (dosync (alter counter inc))
-                         (dosync (alter tRowN inc))
-                         (println @tRowN)
-                         (.addRow model (into-array (repeat (- (get-num-fields database) 1) "ja")))
-                         
-                         (.setTableModel table model)
-                         (.repaint table)
-                         (.setText label
-                                (str (get-fields database)) )))
-                                
+        ;;Handlers
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
+                         
                          (.setText label 
-                                (str(get-field-lengths database)))))
+                              (str (nth datamatrix 0)))))
+                              ;(str "r "(.getSelectedRow table) " c " (.getSelectedColumn table)))))
 
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (println "adding...")
-                         (do (write-new-row testfilename
-                                  ["La Jornada" "Aqui" "4" "N" "$1.00" "2000/01/01" ""] (get-field-lengths database)))))
+                         (.setText label "Adding row...")
+                         ;(dosync (alter tRowN inc))
+                         (.addRow model (into-array ["" "" "" "" "" "" ""]))
+                         ;(write-new-row testfilename
+                         ;         ["" "" "" "" "" "" ""] (get-field-lengths database))
+                         (.setText label "Row Added.")
+                         (.revalidate table)))
 
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
-                         (.setText label 
-                                (str (get-records database)))))
+                         (if (= -1 (.getSelectedRow table))
+                             (.setText label "No row selected.")
+                             ())))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (delete-record "db-1x2 - copia.db" 0 (get-offset database) (apply + (get-field-lengths database)))))
+                         (if (= -1 (.getSelectedRow table))
+                             (.setText label "No row selected.")
+                             (delete-record "db-1x2 - copia.db" (.getSelectedRow table) (get-offset database) (apply + (get-field-lengths database)))))) 
                                 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
+                         (println (.getText searchField))
+                         (print (find-data  (.getText searchField) "location" (get-records database)))
+                         ;(.setRowFilter sorter (RowFilter/regexFilter "j[a-z]*" (vec 0)))
                          (.setText label 
-                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))
+                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))]
                                 
-        hdlLock     (proxy [ActionListener][]
-                       (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (.setText label 
-                                (str (.getValueAt model 0 0) (.getValueAt model 0 1) (.getValueAt model 0 2)))))
-                                
-        hdlUnlock     (proxy [ActionListener][]
-                       (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (.setText label
-                                (str "Times pushed: " @counter))))]
     ;;;;;;;;;;;;; END LET
         
 ;;;;;;;FRAME
@@ -176,7 +193,7 @@
     (.setLayout frame (new BorderLayout))
     
 ;;;;;;;PANEL
-    ;(.setLayout         tPanel (new FlowLayout))
+    (.setLayout         hPanel (new FlowLayout))
     ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
     
     (.setLayout         fPanel (new FlowLayout))
@@ -188,7 +205,7 @@
     (.setLayout         abPanel (new FlowLayout))
     (.setPreferredSize  abPanel (Dimension. (+ 20 btnSX) tableSY))
     
-    ;(.setBackground     tPanel  (Color/yellow))
+    ;(.setBackground     hPanel  (Color/yellow))
     ;(.setBackground     fPanel  (Color/cyan))
     ;(.setBackground     bPanel  (Color/magenta))
     ;(.setBackground     abPanel (Color/black))
@@ -196,20 +213,20 @@
     
 ;;;;;;;TABLE
     (.setModel table model)
+    ;(.setRowSorter table colFilter)
     (.setPreferredSize table (Dimension. tableSX tableSY))
     (.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
     (.setFillsViewportHeight table true)
     (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
+    (.setAutoCreateRowSorter table true)
     
 ;;;;;;;BUTTON
-    (.setPreferredSize benjamin     (Dimension. btnSX btnSY))
     (.setPreferredSize btnShowall   (Dimension. btnSX btnSY))
     (.setPreferredSize btnAdd       (Dimension. btnSX btnSY))
     (.setPreferredSize btnUpdate    (Dimension. btnSX btnSY))
     (.setPreferredSize btnDelete    (Dimension. btnSX btnSY))
     (.setPreferredSize btnFind      (Dimension. btnSX btnSY))
-    (.setPreferredSize btnLock      (Dimension. btnSX btnSY))
-    (.setPreferredSize btnUnlock    (Dimension. btnSX btnSY))
+
       ;;enable
     ;(.setEnabled btnAdd false)
     
@@ -224,43 +241,43 @@
     (.setPreferredSize label        (Dimension. windowSX 25))
     
 ;;;;;;;ADDS
-    ;(.add tPanel (.getTableHeader table) BorderLayout/NORTH)
-    ;(.add tPanel tScrPane)
-    ;(.add tPanel BorderLayout/SOUTH table)
+    ;(.add hPanel image BorderLayout/CENTER)
+    ;(.add hPanel tScrPane)
+    ;(.add hPanel BorderLayout/SOUTH table)
     
     (.add fPanel BorderLayout/NORTH searchField)
     (.add fPanel BorderLayout/CENTER searchBox)
     (.add fPanel BorderLayout/SOUTH btnFind)
     
-    (.add bPanel benjamin)
     (.add bPanel btnShowall)
     (.add bPanel btnAdd)
     (.add bPanel btnUpdate)
     (.add bPanel btnDelete)
-    (.add bPanel btnLock)
-    (.add bPanel btnUnlock)
     
     (.add abPanel BorderLayout/NORTH fPanel)
     (.add abPanel BorderLayout/SOUTH bPanel)
     
+    ;(.add frame BorderLayout/NORTH hPanel)
     (.add frame BorderLayout/CENTER tScrPane)
     (.add frame BorderLayout/EAST abPanel)
     (.add frame BorderLayout/PAGE_END label)
     
     ;;;ACTION LISTENERS
-    (.addActionListener benjamin hdlBenjamin)
     (.addActionListener btnShowall hdlShowall)
     (.addActionListener btnAdd hdlAdd)
     (.addActionListener btnUpdate hdlUpdate)
     (.addActionListener btnDelete hdlDelete)
     (.addActionListener btnFind hdlFind)
-    (.addActionListener btnLock hdlLock)
-    (.addActionListener btnUnlock hdlUnlock)
-    (.addTableModelListener model tListener)
+
+    ;(.addTableModelListener model tListener)
     
     (.pack frame)
     (.setVisible frame true)
     (.setSize frame windowSX windowSY)
+    
+    
+    
+    
   )
 )
 
