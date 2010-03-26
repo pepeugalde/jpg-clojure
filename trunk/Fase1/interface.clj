@@ -153,7 +153,7 @@
                          (dosync (alter counter inc))
                          
                          (.setText label 
-                              (str (nth datamatrix 0)))))
+                              (str (alength datamatrix)))))
                               ;(str "r "(.getSelectedRow table) " c " (.getSelectedColumn table)))))
 
         hdlAdd        (proxy [ActionListener][]
