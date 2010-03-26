@@ -35,8 +35,8 @@
              (.setRowSelectionInterval table col i) 
         )
         (if (found)
-        print "lol"
-        ;JOptionPane.showMessageDialog(null, "No Match Found.", "Message", JOptionPane.PLAIN_MESSAGE);
+          (print "lol")
+          ;JOptionPane.showMessageDialog(null, "No Match Found.", "Message", JOptionPane.PLAIN_MESSAGE);
         )
  	 )
 )
