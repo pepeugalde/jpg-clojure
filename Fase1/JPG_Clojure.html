@@ -167,15 +167,20 @@ collapse(&apos;library-contents-interface&apos;);
 setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
 
 }
-// ]]></script></head><body><div class="lib-links"><div class="lib-link-header">Namespaces<span class="all-libs-toggle"> [ <a href="javascript:expandAllNamespaces()">Expand All</a> ] [ <a href="javascript:collapseAllNamespaces()">Collapse All</a> ]</span></div><a class="lib-link" href="#library-interface">interface</a></div><div class="library"><a name="library-interface"/><div class="library-name"><span class="library-contents-toggle">[ <a id="library-contents-toggle-interface" href="javascript:toggle(&apos;library-contents-interface&apos;, &apos;library-contents-toggle-interface&apos;, &apos;-&apos;, &apos;+&apos;)">-</a> ] </span>interface</div><div class="library-contents" id="library-contents-interface"><div class="library-member-links"><a class="lib-member-link" href="#member-interface-get-col-names">get-col-names</a> <a class="lib-member-link" href="#member-interface-get-field-lengths">get-field-lengths</a> <a class="lib-member-link" href="#member-interface-get-fields">get-fields</a> <a class="lib-member-link" href="#member-interface-get-magic">get-magic</a> <a class="lib-member-link" href="#member-interface-get-num-fields">get-num-fields</a> <a class="lib-member-link" href="#member-interface-get-offset">get-offset</a> <a class="lib-member-link" href="#member-interface-get-records">get-records</a> <a class="lib-member-link" href="#member-interface-interface">interface</a></div><ol class="library-members"><li class="library-member"><a name="member-interface-get-col-names"/><dl class="library-member-table"><dt class="library-member-name">get-col-names</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-col-names&apos;)" id="linkto-membersource-interface-get-col-names">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-col-names"><pre>(defn get-col-names
+// ]]></script></head><body><div class="lib-links"><div class="lib-link-header">Namespaces<span class="all-libs-toggle"> [ <a href="javascript:expandAllNamespaces()">Expand All</a> ] [ <a href="javascript:collapseAllNamespaces()">Collapse All</a> ]</span></div><a class="lib-link" href="#library-interface">interface</a></div><div class="library"><a name="library-interface"/><div class="library-name"><span class="library-contents-toggle">[ <a id="library-contents-toggle-interface" href="javascript:toggle(&apos;library-contents-interface&apos;, &apos;library-contents-toggle-interface&apos;, &apos;-&apos;, &apos;+&apos;)">-</a> ] </span>interface</div><div class="library-contents" id="library-contents-interface"><div class="library-member-links"><a class="lib-member-link" href="#member-interface-find-data">find-data</a> <a class="lib-member-link" href="#member-interface-fliplr">fliplr</a> <a class="lib-member-link" href="#member-interface-get-col-names">get-col-names</a> <a class="lib-member-link" href="#member-interface-get-field-lengths">get-field-lengths</a> <a class="lib-member-link" href="#member-interface-get-fields">get-fields</a> <a class="lib-member-link" href="#member-interface-get-magic">get-magic</a> <a class="lib-member-link" href="#member-interface-get-num-fields">get-num-fields</a> <a class="lib-member-link" href="#member-interface-get-offset">get-offset</a> <a class="lib-member-link" href="#member-interface-get-records">get-records</a> <a class="lib-member-link" href="#member-interface-interface">interface</a> <a class="lib-member-link" href="#member-interface-records-to-array">records-to-array</a> <a class="lib-member-link" href="#member-interface-table">table</a></div><ol class="library-members"><li class="library-member"><a name="member-interface-find-data"/><dl class="library-member-table"><dt class="library-member-name">find-data</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([sstring column list])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Finds specified data</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-find-data&apos;)" id="linkto-membersource-interface-find-data">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-find-data"><pre>(defn find-data
+  &quot;Finds specified data&quot; 
+  [sstring column list] 
+  (filter #(= ((keyword column) %) sstring) list))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-fliplr"/><dl class="library-member-table"><dt class="library-member-name">fliplr</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([arr])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Flips an array horizontally</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-fliplr&apos;)" id="linkto-membersource-interface-fliplr">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-fliplr"><pre>(defn fliplr
+  &quot;Flips an array horizontally&quot;
+  [arr]
+  arr
+)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-col-names"/><dl class="library-member-table"><dt class="library-member-name">get-col-names</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-col-names&apos;)" id="linkto-membersource-interface-get-col-names">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-col-names"><pre>(defn get-col-names
 	&quot;Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)&quot;
 	[db]
-	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln)))
-)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-field-lengths"/><dl class="library-member-table"><dt class="library-member-name">get-field-lengths</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing field lengths</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-field-lengths&apos;)" id="linkto-membersource-interface-get-field-lengths">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-field-lengths"><pre>(defn get-field-lengths
+	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln))))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-field-lengths"/><dl class="library-member-table"><dt class="library-member-name">get-field-lengths</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing field lengths</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-field-lengths&apos;)" id="linkto-membersource-interface-get-field-lengths">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-field-lengths"><pre>(defn get-field-lengths
 	&quot;Returns a vector containing field lengths&quot;
 	[db]
-	(vec (for [[_ len] (get db :fields)] len))
-)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-fields"/><dl class="library-member-table"><dt class="library-member-name">get-fields</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns fields from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-fields&apos;)" id="linkto-membersource-interface-get-fields">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-fields"><pre>(defn get-fields
+	(vec (for [[_ len] (get db :fields)] len)))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-fields"/><dl class="library-member-table"><dt class="library-member-name">get-fields</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns fields from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-fields&apos;)" id="linkto-membersource-interface-get-fields">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-fields"><pre>(defn get-fields
     &quot;Returns fields from a database&quot;
     [db]
     (get db :fields))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-magic"/><dl class="library-member-table"><dt class="library-member-name">get-magic</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns magic number from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-magic&apos;)" id="linkto-membersource-interface-get-magic">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-magic"><pre>(defn get-magic
@@ -194,32 +199,30 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
   &quot;Displays the interface that will be used in the urlybird project&quot;
   [title]
   (let [filename     &quot;db-1x2 - copia.db&quot;;&quot;db-1x2.db&quot;
-        testfilename &quot;lol.db&quot;
-        database    (read-bin-file filename)
+        testfilename &quot;db-1x2 - copia.db&quot;
+        database     (read-bin-file filename)
         
-        windowSX  800
-        windowSY  600
-        labelH    25
-        btnSX     150
-        btnSY     30
-        tableSX   (- windowSX (+ 30 btnSX))
-        tableSY   (- windowSY labelH)
+        datamatrix   (agent (records-to-array (get-records database)))
         
+        windowSX     800
+        windowSY     600
+        labelH       25
+        btnSX        150
+        btnSY        30
+        tableSX      (- windowSX (+ 30 btnSX))
+        tableSY      (- windowSY labelH)
         
         frame       (JFrame. title)
-        ;tPanel      (JPanel. )
+        hPanel      (JPanel. )
         fPanel      (JPanel. )
         bPanel      (JPanel. )
-        abPanel     (JPanel. ) 
+        abPanel     (JPanel. )
         
-        benjamin    (JButton. &quot;Push me =O&quot;)
         btnShowall  (JButton. &quot;Show All&quot;)
         btnAdd      (JButton. &quot;Add new row&quot;)
         btnUpdate   (JButton. &quot;Update&quot;)
         btnDelete   (JButton. &quot;Delete&quot;)
         btnFind     (JButton. &quot;Find&quot;)
-        btnLock     (JButton. &quot;Lock Selected&quot;)
-        btnUnlock   (JButton. &quot;Unlock Selected&quot;)
         
         searchField (JTextField. )
         searchBox   (JComboBox. (to-array (get-col-names database)))
@@ -229,89 +232,77 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
         counter     (ref 0)
         tRowN       (ref (count (get-records database)))
         tColN       (ref (get-num-fields database))
-        
-        table       (JTable. )
+
         tScrPane    (JScrollPane. table)
         
         tListener   (proxy [TableModelListener] []
-            (tableChanged [e]
-                    (.setText label &quot;lol&quot;)
-                    ;(str &quot;tableChanged(&quot; (.getSource e) &quot;), rowCount = &quot; (.getRowCount (.getSource e))))
-             ;       (if (&lt; 0 (.getRowCount (.getSource e)))
-              ;        (do-swing (preview-mode))
-               ;       (do-swing (init-mode)))
+
+        )
+        
+        model       (proxy [DefaultTableModel][@datamatrix (into-array(get-col-names database))]
+        	  (isCellEditable [row col] true)                 ;All cells are editable
+        )
+        
+        colFilter   (proxy [RowFilter][]
+            (include [entry filters]
+                (loop [i 0  result true]
+                    (if (&lt; i (count filters))
+                        (if (and (result) (not (= &quot;&quot; (nth filter i))))
+                            (recur (inc i) (.startsWith (.toString (.getValue entry i)) (nth filters i)))
+                            ())
+                        (result)
+                    )
+                )
+        
+                ;for (int i = 0; i &lt; filters.length; i++) (
+                ;    if (result &amp;&amp; !(filters[i].equals(&quot;&quot;)) ) (
+                ;        String v = entry.getValue(i).toString();
+                ;        result =  v.startsWith(filters[i]);
+                ;    )
+                ;)
             )
-            (columnMarginChanged [e] (.setText label &quot;lol2&quot;))
         )
-
         
         
-        model       (proxy [DefaultTableModel][]
-        	(isCellEditable [row col] true)                 ;All cells are editable
-            (getRowCount []    @tRowN)  ;Gets number of rows from database
-            (getColumnCount [] @tColN)  ;Gets number of cols from database
-        	;;Sets column names as the string in :fields vector
-            (getColumnName [col]
-                    (nth (get-col-names database) col))
-            ;;Uses column name as keyword to get value in row tuple
-            (getValueAt [row col]
-                    (get (nth (get-records database) row)
-                       (keyword (str (first (nth (get-fields database) col))))))
-        )
-
-        hdlBenjamin    (proxy [ActionListener][]
-                        (actionPerformed [event]
-                       	 (dosync (alter counter inc))
-                         (dosync (alter tRowN inc))
-                         (println @tRowN)
-                         (.addRow model (into-array (repeat (- (get-num-fields database) 1) &quot;ja&quot;)))
-                         
-                         (.setTableModel table model)
-                         (.repaint table)
-                         (.setText label
-                                (str (get-fields database)) )))
-                                
+        ;;Handlers
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
+                         
                          (.setText label 
-                                (str(get-field-lengths database)))))
+                              (str (alength datamatrix)))))
+                              ;(str &quot;r &quot;(.getSelectedRow table) &quot; c &quot; (.getSelectedColumn table)))))
 
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (println &quot;adding...&quot;)
-                         (do (write-new-row testfilename
-                                  [&quot;La Jornada&quot; &quot;Aqui&quot; &quot;4&quot; &quot;N&quot; &quot;$1.00&quot; &quot;2000/01/01&quot; &quot;&quot;] (get-field-lengths database)))))
+                         (.setText label &quot;Adding row...&quot;)
+                         ;(dosync (alter tRowN inc))
+                         (.addRow model (into-array [&quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot;]))
+                         ;(write-new-row testfilename
+                         ;         [&quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot;] (get-field-lengths database))
+                         (.setText label &quot;Row Added.&quot;)
+                         (.revalidate table)))
 
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
-                         (.setText label 
-                                (str (get-records database)))))
+                         (if (= -1 (.getSelectedRow table))
+                             (.setText label &quot;No row selected.&quot;)
+                             ())))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (delete-record &quot;db-1x2 - copia.db&quot; 0 (get-offset database) (apply + (get-field-lengths database)))))
+                         (if (= -1 (.getSelectedRow table))
+                             (.setText label &quot;No row selected.&quot;)
+                             (delete-record &quot;db-1x2 - copia.db&quot; (.getSelectedRow table) (get-offset database) (apply + (get-field-lengths database)))))) 
                                 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
+                         (println (.getText searchField))
+                         (print (find-data  (.getText searchField) &quot;location&quot; (get-records database)))
+                         ;(.setRowFilter sorter (RowFilter/regexFilter &quot;j[a-z]*&quot; (vec 0)))
                          (.setText label 
-                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))
+                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))]
                                 
-        hdlLock     (proxy [ActionListener][]
-                       (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (.setText label 
-                                (str (.getValueAt model 0 0) (.getValueAt model 0 1) (.getValueAt model 0 2)))))
-                                
-        hdlUnlock     (proxy [ActionListener][]
-                       (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         (.setText label
-                                (str &quot;Times pushed: &quot; @counter))))]
     ;;;;;;;;;;;;; END LET
         
 ;;;;;;;FRAME
@@ -319,7 +310,7 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
     (.setLayout frame (new BorderLayout))
     
 ;;;;;;;PANEL
-    ;(.setLayout         tPanel (new FlowLayout))
+    (.setLayout         hPanel (new FlowLayout))
     ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
     
     (.setLayout         fPanel (new FlowLayout))
@@ -331,7 +322,7 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
     (.setLayout         abPanel (new FlowLayout))
     (.setPreferredSize  abPanel (Dimension. (+ 20 btnSX) tableSY))
     
-    ;(.setBackground     tPanel  (Color/yellow))
+    ;(.setBackground     hPanel  (Color/yellow))
     ;(.setBackground     fPanel  (Color/cyan))
     ;(.setBackground     bPanel  (Color/magenta))
     ;(.setBackground     abPanel (Color/black))
@@ -339,20 +330,20 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
     
 ;;;;;;;TABLE
     (.setModel table model)
+    ;(.setRowSorter table colFilter)
     (.setPreferredSize table (Dimension. tableSX tableSY))
     (.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
     (.setFillsViewportHeight table true)
     (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
+    (.setAutoCreateRowSorter table true)
     
 ;;;;;;;BUTTON
-    (.setPreferredSize benjamin     (Dimension. btnSX btnSY))
     (.setPreferredSize btnShowall   (Dimension. btnSX btnSY))
     (.setPreferredSize btnAdd       (Dimension. btnSX btnSY))
     (.setPreferredSize btnUpdate    (Dimension. btnSX btnSY))
     (.setPreferredSize btnDelete    (Dimension. btnSX btnSY))
     (.setPreferredSize btnFind      (Dimension. btnSX btnSY))
-    (.setPreferredSize btnLock      (Dimension. btnSX btnSY))
-    (.setPreferredSize btnUnlock    (Dimension. btnSX btnSY))
+
       ;;enable
     ;(.setEnabled btnAdd false)
     
@@ -367,42 +358,59 @@ setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
     (.setPreferredSize label        (Dimension. windowSX 25))
     
 ;;;;;;;ADDS
-    ;(.add tPanel (.getTableHeader table) BorderLayout/NORTH)
-    ;(.add tPanel tScrPane)
-    ;(.add tPanel BorderLayout/SOUTH table)
+    ;(.add hPanel image BorderLayout/CENTER)
+    ;(.add hPanel tScrPane)
+    ;(.add hPanel BorderLayout/SOUTH table)
     
     (.add fPanel BorderLayout/NORTH searchField)
     (.add fPanel BorderLayout/CENTER searchBox)
     (.add fPanel BorderLayout/SOUTH btnFind)
     
-    (.add bPanel benjamin)
     (.add bPanel btnShowall)
     (.add bPanel btnAdd)
     (.add bPanel btnUpdate)
     (.add bPanel btnDelete)
-    (.add bPanel btnLock)
-    (.add bPanel btnUnlock)
     
     (.add abPanel BorderLayout/NORTH fPanel)
     (.add abPanel BorderLayout/SOUTH bPanel)
     
+    ;(.add frame BorderLayout/NORTH hPanel)
     (.add frame BorderLayout/CENTER tScrPane)
     (.add frame BorderLayout/EAST abPanel)
     (.add frame BorderLayout/PAGE_END label)
     
     ;;;ACTION LISTENERS
-    (.addActionListener benjamin hdlBenjamin)
     (.addActionListener btnShowall hdlShowall)
     (.addActionListener btnAdd hdlAdd)
     (.addActionListener btnUpdate hdlUpdate)
     (.addActionListener btnDelete hdlDelete)
     (.addActionListener btnFind hdlFind)
-    (.addActionListener btnLock hdlLock)
-    (.addActionListener btnUnlock hdlUnlock)
-    (.addTableModelListener model tListener)
+
+    ;(.addTableModelListener model tListener)
     
     (.pack frame)
     (.setVisible frame true)
     (.setSize frame windowSX windowSY)
+    
+    
+    
+    
   )
-)</pre></div></div></dd></dl></li></ol></div></div></body></html>
+)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-records-to-array"/><dl class="library-member-table"><dt class="library-member-name">records-to-array</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([records])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Transforms record dictionary into a 2d array</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-records-to-array&apos;)" id="linkto-membersource-interface-records-to-array">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-records-to-array"><pre>(defn records-to-array
+  &quot;Transforms record dictionary into a 2d array&quot;
+  [records]
+  (fliplr (to-array-2d records))
+;  (let [array []]
+;    (for [tuple records]
+;      
+;      (print (loop [filteredrow []   ituple tuple]
+;        (if (empty? ituple)
+; 
+; (filteredrow)
+;          (recur (conj filteredrow (str(first ituple)))(rest ituple))
+;        )
+;      ))
+;      
+;    )
+;  )
+)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-table"/><dl class="library-member-table"><dt class="library-member-name">table</dt><dd><div class="library-member-info"><span class="library-member-type">var</span> <span class="library-member-arglists"></span></div><div class="library-member-docs"/><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-table&apos;)" id="linkto-membersource-interface-table">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-table"><pre>(def table          (JTable. ))</pre></div></div></dd></dl></li></ol></div></div></body></html>
