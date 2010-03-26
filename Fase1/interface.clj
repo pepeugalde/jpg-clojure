@@ -1,10 +1,11 @@
 (ns interface
     (:require clojure.contrib.swing-utils)
-    (:use dbread dbwrite dbsearch)
+    (:use dbread dbwrite dbsearch dbget)
 )
 (import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon)
         '(javax.swing.table DefaultTableModel TableRowSorter)
         '(javax.swing.event TableModelListener)
+        '(java.awt Rectangle)
         '(java.awt.event ActionListener)
         '(java.util Collections)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
@@ -12,100 +13,41 @@
 
 ;;;;;DEFS
 (def table          (JTable. ))
-(def filename       "db-1x2 - copia.db");"db-1x2.db")
+(def filename       "db-1x2 - copia.db")
 (def testfilename   "db-1x2 - copia.db")
 (def database       (read-bin-file filename))
+(def datamatrix     (agent 
+                        (get-record2d-values 
+                          (records-to-array 
+                            (filter-non-deleted 
+                              (get-records database)) 
+                          (get-num-fields database)))))
 
 
 (defn find-data
   "Finds specified data" 
   [sstring column list] 
   (filter #(= ((keyword column) %) sstring) list))
-
-;;GETS
-(defn get-magic
-    "Returns magic number from a database"
-    [db]
-    (get db :magic))
-
-(defn get-offset
-    "Returns offset from a database"
-    [db]
-    (get db :offset))  
-
-(defn get-num-fields
-    "Returns number of fields from a database"
-    [db]
-    (get db :num-fields))
-
-(defn get-fields
-    "Returns fields from a database"
-    [db]
-    (get db :fields))  
-
-(defn get-records 
-    "Returns records from a database"
-    [db]
-    (get db :records))
-
-(defn get-col-names
-	"Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)"
-	[db]
-	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln))))
-
-(defn get-field-lengths
-	"Returns a vector containing field lengths"
-	[db]
-	(vec (for [[_ len] (get db :fields)] len)))
   
-
-(defn fliplr
-  "Flips a tuple horizontally"
-  [tuple left right exleftval]
-  (aset tuple left (aget tuple right))
-  (aset tuple right exleftval)
-  tuple
-)
-
-(defn records-to-array
-  "Transforms record dictionary into a 2d array, keeps keywords."
-  [records numfields]
-  (let [records2d (to-array-2d records)]
-    (loop [i 0]
-        (if (< i (count records))
-            (do   (loop [lelem 0  relem (- numfields 1)] 
-                    (if (< lelem relem)
-                        (do (aset records2d i (fliplr (aget records2d i) lelem relem (aget records2d i lelem)))
-                            (recur (inc lelem) (dec relem)))
-                        ()))
-                   (recur (inc i))))                        
-    )
-    records2d
-  )
-)
-
-(defn get-record2d-values
-  "Returns 2d array containing only values."
-  [records2d]
+(defn paintDeleted
+  "Paints red deleted records in table"
+  [table]
   (loop [i 0]
-      (if (< i (alength records2d))
-          (do   (loop [j 0] 
-                  (if (< j (alength (aget records2d i)))
-                      (do (aset records2d i j (second (aget records2d i j)))
-                          (recur (inc j)))
-                      ()))
-                 (recur (inc i))))
+        (if (< i (alength @datamatrix))
+            (do (if (= true (aget @datamatrix i (get-num-fields database)))
+                    (.setBackground (.getRow table i) Color/RED)
+                    ())
+                (recur (inc i)))
+            ())
   )
-  records2d
 )
+
 
         
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
-  (let [datamatrix   (agent (get-record2d-values (records-to-array (get-records database) (get-num-fields database))))
-        
-        windowSX     800
+  (let [windowSX     800
         windowSY     600
         labelH       25
         btnSX        150
@@ -120,10 +62,10 @@
         bPanel      (JPanel. )
         abPanel     (JPanel. )
         
-        btnShowall  (JButton. "Show All")
+        btnShowall  (JButton. "Show all")
         btnAdd      (JButton. "Add new row")
-        btnUpdate   (JButton. "Update")
-        btnDelete   (JButton. "Delete")
+        btnUpdate   (JButton. "Update selected row")
+        btnDelete   (JButton. "Delete selected row")
         btnFind     (JButton. "Find")
         
         searchField (JTextField. )
@@ -133,38 +75,20 @@
         imgLabel    (JLabel.)
         
         counter     (ref 0)
-        tRowN       (ref (count (get-records database)))
-        tColN       (ref (get-num-fields database))
 
         tScrPane    (JScrollPane. table)
         
-        tListener   (proxy [TableModelListener] []
-
-        )
-        
-        model       (proxy [DefaultTableModel][@datamatrix (into-array(get-col-names database))]
-        	  (isCellEditable [row col] true)                 ;All cells are editable
-        )
-        
-        colFilter   (proxy [RowFilter][]
-            (include [entry filters]
+        tListener   (proxy [TableModelListener] [])
+        model       (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names database))])
+        sorter      (proxy [TableRowSorter]     [model])
+        colFilter   (proxy [RowFilter]          []
+             (include [entry filters]
                 (loop [i 0  result true]
                     (if (< i (count filters))
-                        (if (and (result) (not (= "" (nth filter i))))
+                        (if (and result (not (= "" (nth filter i))))
                             (recur (inc i) (.startsWith (.toString (.getValue entry i)) (nth filters i)))
                             ())
-                        (result)
-                    )
-                )
-        
-                ;for (int i = 0; i < filters.length; i++) (
-                ;    if (result && !(filters[i].equals("")) ) (
-                ;        String v = entry.getValue(i).toString();
-                ;        result =  v.startsWith(filters[i]);
-                ;    )
-                ;)
-            )
-        )
+                        (result)))))
         
         
         ;;;;;Handlers
@@ -173,42 +97,67 @@
                          (dosync (alter counter inc))
                          
                          (.setText label 
-                              (get-col-names database))))
+                              (str(.getSelectedColumn table)))))
                               ;(str (nth(nth (nth @datamatrix 0) 0)0)))))
                               ;(str "r "(.getSelectedRow table) " c " (.getSelectedColumn table)))))
 
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
                          (.setText label "Adding row...")
-                         ;(dosync (alter tRowN inc))
                          (.addRow model (into-array (vec (repeat (get-num-fields database) ""))))
-                         ;(write-new-row testfilename
-                         ;         ["" "" "" "" "" "" ""] (get-field-lengths database))
-                         (.setText label "Row added")
-                         (.revalidate table)))
+                         (write-new-row testfilename
+                                  (vec (repeat (get-num-fields database) "")) (get-field-lengths database))
+                         (.revalidate table)
+                         (.setText label "Row added")))
 
         hdlUpdate     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (if (= -1 (.getSelectedRow table))
-                             (.setText label "No row selected.")
-                             ())))
+                             (.setText label "No row selected")
+                             (do (update-record-skip-deleted testfilename
+                                                             (to-array (get-trimmed-values (loop  [i (- (get-num-fields database) 1)  result ()] 
+                                                                                                (if (> i -1)
+                                                                                                    (recur (dec i) (conj result (.getValueAt model (.getSelectedRow table) i)))
+                                                                                                    result))
+                                                                                          (get-field-lengths database)))
+                                                             (get-field-lengths database)
+                                                             (.getSelectedRow table)
+                                                             (get-offset database))
+                                  (.setText label "Row updated")))))
+                                  ; (.setText label (str(vec(get-trimmed-values(loop [i (- (get-num-fields database) 1)  result ()] 
+                                                                                  ; (if (> i -1)
+                                                                                      ; (recur (dec i) (conj result (.getValueAt model (.getSelectedRow table) i)))
+                                                                                      ; result))
+                                                                             ; (get-field-lengths database))))))))
                                 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
                          (if (= -1 (.getSelectedRow table))
-                             (.setText label "No row selected.")
-                             (delete-record testfilename (.getSelectedRow table) (get-offset database) (apply + (get-field-lengths database)))))) 
+                             (.setText label "No row selected")
+                             (do  (println (str (.getRowCount model)))
+                                  (println (str (count @datamatrix)))
+                                  (delete-record-skip-deleted testfilename 
+                                                              (.getSelectedRow table) 
+                                                              (get-offset database) 
+                                                              (apply + (get-field-lengths database)))
+                                  (.removeRow model (.getSelectedRow table))
+                                  (.setText label "Row deleted")
+                                  (println (str (.getRowCount model)))
+                                  (println (str (count @datamatrix))) ))))
                                 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (println (.getText searchField))
-                         (print (find-data  (.getText searchField) "location" (get-records database)))
-                         ;(.setRowFilter sorter (RowFilter/regexFilter "j[a-z]*" (vec 0)))
+                         ;(println (.getText searchField))
+                         ;(print (find-data  (.getText searchField) "location" (get-records database)))
+                         ;(.setRowFilter sorter (.regexFilter colFilter (str "^" (.getText searchField)) (to-array [0])))
+                         (. sorter setRowFilter (RowFilter/regexFilter ".*foo.*" 0))
                          (.setText label 
-                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))]
+                                "Filtered rows")))
+  ]
+                                ;(get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))]
                                 
     ;;;;;;;;;;;;; END LET
-        
+    
 ;;;;;;;FRAME
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
     (.setLayout frame (new BorderLayout))
@@ -235,11 +184,14 @@
 ;;;;;;;TABLE
     (.setModel table model)
     ;(.setRowSorter table colFilter)
-    (.setPreferredSize table (Dimension. tableSX tableSY))
-    (.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
-    (.setFillsViewportHeight table true)
+    ;(.setPreferredSize table (Dimension. tableSX tableSY))
+    ;(.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
+    ;(.setFillsViewportHeight table true)
     (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
-    (.setAutoCreateRowSorter table true)
+    ;(.setAutoCreateRowSorter table true)
+    (.setRowSorter table sorter)
+    ;(.setModel sorter model)
+    
     
 ;;;;;;;BUTTON
     (.setPreferredSize btnShowall   (Dimension. btnSX btnSY))
