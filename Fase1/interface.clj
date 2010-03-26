@@ -109,7 +109,7 @@
         windowSY     600
         labelH       25
         btnSX        150
-        btnSY        30
+        btnSY        40
         topY         80
         tableSX      (- windowSX (+ 30 btnSX))
         tableSY      (- windowSY labelH topY)
@@ -181,10 +181,10 @@
                        (actionPerformed [event]
                          (.setText label "Adding row...")
                          ;(dosync (alter tRowN inc))
-                         (.addRow model (into-array ["" "" "" "" "" "" ""]))
+                         (.addRow model (into-array (vec (repeat (get-num-fields database) ""))))
                          ;(write-new-row testfilename
                          ;         ["" "" "" "" "" "" ""] (get-field-lengths database))
-                         (.setText label "Row Added.")
+                         (.setText label "Row added")
                          (.revalidate table)))
 
         hdlUpdate     (proxy [ActionListener][]
@@ -197,7 +197,7 @@
                        (actionPerformed [event]
                          (if (= -1 (.getSelectedRow table))
                              (.setText label "No row selected.")
-                             (delete-record "db-1x2 - copia.db" (.getSelectedRow table) (get-offset database) (apply + (get-field-lengths database)))))) 
+                             (delete-record testfilename (.getSelectedRow table) (get-offset database) (apply + (get-field-lengths database)))))) 
                                 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -214,7 +214,7 @@
     (.setLayout frame (new BorderLayout))
     
 ;;;;;;;PANEL
-    (.setLayout         hPanel (new FlowLayout))
+    (.setLayout         hPanel (new BorderLayout))
     (.setPreferredSize  hPanel (Dimension. windowSX topY))
     
     (.setLayout         fPanel (new FlowLayout))
@@ -233,7 +233,6 @@
     
     
 ;;;;;;;TABLE
-    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
     (.setModel table model)
     ;(.setRowSorter table colFilter)
     (.setPreferredSize table (Dimension. tableSX tableSY))
@@ -261,11 +260,11 @@
     
 ;;;;;;;LABEL
     (.setPreferredSize label        (Dimension. windowSX 25))
-    (.setPreferredSize imgLabel (Dimension. 600,90))
+    (.setPreferredSize imgLabel (Dimension. windowSX topY))
     (.setIcon imgLabel (ImageIcon. "urly.jpg"))
     
 ;;;;;;;ADDS
-    (.add hPanel imgLabel BorderLayout/CENTER)
+    (.add hPanel imgLabel BorderLayout/WEST)
     
     (.add fPanel BorderLayout/NORTH searchField)
     (.add fPanel BorderLayout/CENTER searchBox)

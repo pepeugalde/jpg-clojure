@@ -1,0 +1,8 @@
+﻿update
+find
+tests
+filtrar borrados
+viewport de tabla (si agregas tuplas, no se ven)
+
+
+imagen
