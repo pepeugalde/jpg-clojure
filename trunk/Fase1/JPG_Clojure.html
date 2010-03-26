@@ -1,0 +1,408 @@
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Clojure documentation browser</title><style>
+.library
+{
+  padding: 0.5em 0 0 0 
+}
+.all-libs-toggle,.library-contents-toggle
+{
+ font-size: small;
+}
+.all-libs-toggle a,.library-contents-toggle a
+{
+ color: white
+}
+.library-member-doc-whitespace
+{
+ white-space: pre
+}
+.library-member-source-toggle
+{
+  font-size: small;
+  margin-top: 0.5em
+}
+.library-member-source
+{
+  display: none;
+  border-left: solid lightblue 
+}
+.library-member-docs
+{
+  font-family:monospace
+}
+.library-member-arglists
+{
+  font-family: monospace
+}
+.library-member-type
+{
+  font-weight: bold; 
+  font-size: small;
+  font-style: italic;
+  color: darkred
+}
+.lib-links
+{
+  margin: 0 0 1em 0
+}
+
+.lib-link-header
+{
+  color: white;
+  background: darkgreen;
+  width: 100%
+}
+
+.library-name 
+{ 
+  color: white;
+  background: darkblue;
+  width: 100%
+}
+
+.missing-library
+{
+  color: darkred; 
+  margin: 0 0 1em 0 
+}
+
+.library-members
+{
+  list-style: none
+}
+
+.library-member-name
+{
+  font-weight: bold;
+  font-size: 105%
+}</style><script language="JavaScript" type="text/javascript"> // <![CDATA[
+
+function getElem(id)
+{
+  if( document.getElementById )
+  {
+    return document.getElementById( id )
+  }
+  else if ( document.all )
+  {
+    return eval( 'document.all.' + id )
+  }
+  else
+    return false;
+}
+
+function setDisplayStyle(id,displayStyle)
+{
+  var elem = getElem (id)
+  if (elem)
+  {
+    elem.style.display = displayStyle
+  }
+
+}
+
+function setLinkToggleText (id, text)
+{
+ var elem = getElem (id)
+ if (elem)
+ {
+   elem.innerHTML = text
+ }
+}
+
+function collapse(id)
+{
+  setDisplayStyle (id, 'none')
+}
+
+function expand (id)
+{
+  setDisplayStyle (id, 'block')
+}
+
+function toggleSource( id )
+{
+  toggle(id, 'linkto-' + id, 'Hide Source', 'Show Source')
+}
+
+function toggle(targetid, linkid, textWhenOpen, textWhenClosed)
+{
+  var elem = getElem (targetid)
+  var link = getElem (linkid)
+
+  if (elem && link)
+  {
+    var isOpen = false
+    if (elem.style.display == '')
+    {
+      isOpen = link.innerHTML == textWhenOpen
+    }
+    else if( elem.style.display == 'block' )
+    {
+      isOpen = true
+    }
+    
+    if (isOpen)
+    {
+      elem.style.display = 'none'
+      link.innerHTML = textWhenClosed
+    }
+    else
+    {
+      elem.style.display = 'block'
+      link.innerHTML = textWhenOpen
+    }
+  }
+}
+
+      //]]>
+</script><script language="JavaScript" type="text/javascript">// <![CDATA[!
+function expandAllNamespaces()
+{
+expand(&apos;library-contents-interface&apos;);
+setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;-&apos;);
+
+}function collapseAllNamespaces()
+{
+collapse(&apos;library-contents-interface&apos;);
+setLinkToggleText(&apos;library-contents-toggle-interface&apos;, &apos;+&apos;);
+
+}
+// ]]></script></head><body><div class="lib-links"><div class="lib-link-header">Namespaces<span class="all-libs-toggle"> [ <a href="javascript:expandAllNamespaces()">Expand All</a> ] [ <a href="javascript:collapseAllNamespaces()">Collapse All</a> ]</span></div><a class="lib-link" href="#library-interface">interface</a></div><div class="library"><a name="library-interface"/><div class="library-name"><span class="library-contents-toggle">[ <a id="library-contents-toggle-interface" href="javascript:toggle(&apos;library-contents-interface&apos;, &apos;library-contents-toggle-interface&apos;, &apos;-&apos;, &apos;+&apos;)">-</a> ] </span>interface</div><div class="library-contents" id="library-contents-interface"><div class="library-member-links"><a class="lib-member-link" href="#member-interface-get-col-names">get-col-names</a> <a class="lib-member-link" href="#member-interface-get-field-lengths">get-field-lengths</a> <a class="lib-member-link" href="#member-interface-get-fields">get-fields</a> <a class="lib-member-link" href="#member-interface-get-magic">get-magic</a> <a class="lib-member-link" href="#member-interface-get-num-fields">get-num-fields</a> <a class="lib-member-link" href="#member-interface-get-offset">get-offset</a> <a class="lib-member-link" href="#member-interface-get-records">get-records</a> <a class="lib-member-link" href="#member-interface-interface">interface</a></div><ol class="library-members"><li class="library-member"><a name="member-interface-get-col-names"/><dl class="library-member-table"><dt class="library-member-name">get-col-names</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-col-names&apos;)" id="linkto-membersource-interface-get-col-names">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-col-names"><pre>(defn get-col-names
+	&quot;Returns a vector containing column names in CAPS LOCK (FOR CRUISE CONTROL)&quot;
+	[db]
+	(vec (for [[coln _] (get db :fields)] (.toUpperCase coln)))
+)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-field-lengths"/><dl class="library-member-table"><dt class="library-member-name">get-field-lengths</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns a vector containing field lengths</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-field-lengths&apos;)" id="linkto-membersource-interface-get-field-lengths">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-field-lengths"><pre>(defn get-field-lengths
+	&quot;Returns a vector containing field lengths&quot;
+	[db]
+	(vec (for [[_ len] (get db :fields)] len))
+)</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-fields"/><dl class="library-member-table"><dt class="library-member-name">get-fields</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns fields from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-fields&apos;)" id="linkto-membersource-interface-get-fields">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-fields"><pre>(defn get-fields
+    &quot;Returns fields from a database&quot;
+    [db]
+    (get db :fields))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-magic"/><dl class="library-member-table"><dt class="library-member-name">get-magic</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns magic number from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-magic&apos;)" id="linkto-membersource-interface-get-magic">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-magic"><pre>(defn get-magic
+    &quot;Returns magic number from a database&quot;
+    [db]
+    (get db :magic))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-num-fields"/><dl class="library-member-table"><dt class="library-member-name">get-num-fields</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns number of fields from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-num-fields&apos;)" id="linkto-membersource-interface-get-num-fields">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-num-fields"><pre>(defn get-num-fields
+    &quot;Returns number of fields from a database&quot;
+    [db]
+    (get db :num-fields))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-offset"/><dl class="library-member-table"><dt class="library-member-name">get-offset</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns offset from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-offset&apos;)" id="linkto-membersource-interface-get-offset">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-offset"><pre>(defn get-offset
+    &quot;Returns offset from a database&quot;
+    [db]
+    (get db :offset))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-get-records"/><dl class="library-member-table"><dt class="library-member-name">get-records</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([db])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Returns records from a database</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-get-records&apos;)" id="linkto-membersource-interface-get-records">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-get-records"><pre>(defn get-records 
+    &quot;Returns records from a database&quot;
+    [db]
+    (get db :records))</pre></div></div></dd></dl></li><li class="library-member"><a name="member-interface-interface"/><dl class="library-member-table"><dt class="library-member-name">interface</dt><dd><div class="library-member-info"><span class="library-member-type">fn</span> <span class="library-member-arglists">([title])</span></div><div class="library-member-docs"><div class="library-member-doc-line">Displays the interface that will be used in the urlybird project</div></div><div class="library-member-source-section"><div class="library-member-source-toggle">[ <a href="javascript:toggleSource(&apos;membersource-interface-interface&apos;)" id="linkto-membersource-interface-interface">Show Source</a> ]</div><div class="library-member-source" id="membersource-interface-interface"><pre>(defn interface
+  &quot;Displays the interface that will be used in the urlybird project&quot;
+  [title]
+  (let [filename     &quot;db-1x2 - copia.db&quot;;&quot;db-1x2.db&quot;
+        testfilename &quot;lol.db&quot;
+        database    (read-bin-file filename)
+        
+        windowSX  800
+        windowSY  600
+        labelH    25
+        btnSX     150
+        btnSY     30
+        tableSX   (- windowSX (+ 30 btnSX))
+        tableSY   (- windowSY labelH)
+        
+        
+        frame       (JFrame. title)
+        ;tPanel      (JPanel. )
+        fPanel      (JPanel. )
+        bPanel      (JPanel. )
+        abPanel     (JPanel. ) 
+        
+        benjamin    (JButton. &quot;Push me =O&quot;)
+        btnShowall  (JButton. &quot;Show All&quot;)
+        btnAdd      (JButton. &quot;Add new row&quot;)
+        btnUpdate   (JButton. &quot;Update&quot;)
+        btnDelete   (JButton. &quot;Delete&quot;)
+        btnFind     (JButton. &quot;Find&quot;)
+        btnLock     (JButton. &quot;Lock Selected&quot;)
+        btnUnlock   (JButton. &quot;Unlock Selected&quot;)
+        
+        searchField (JTextField. )
+        searchBox   (JComboBox. (to-array (get-col-names database)))
+        
+        label       (JLabel. &quot;Something&quot;)
+        
+        counter     (ref 0)
+        tRowN       (ref (count (get-records database)))
+        tColN       (ref (get-num-fields database))
+        
+        table       (JTable. )
+        tScrPane    (JScrollPane. table)
+        
+        tListener   (proxy [TableModelListener] []
+            (tableChanged [e]
+                    (.setText label &quot;lol&quot;)
+                    ;(str &quot;tableChanged(&quot; (.getSource e) &quot;), rowCount = &quot; (.getRowCount (.getSource e))))
+             ;       (if (&lt; 0 (.getRowCount (.getSource e)))
+              ;        (do-swing (preview-mode))
+               ;       (do-swing (init-mode)))
+            )
+            (columnMarginChanged [e] (.setText label &quot;lol2&quot;))
+        )
+
+        
+        
+        model       (proxy [DefaultTableModel][]
+        	(isCellEditable [row col] true)                 ;All cells are editable
+            (getRowCount []    @tRowN)  ;Gets number of rows from database
+            (getColumnCount [] @tColN)  ;Gets number of cols from database
+        	;;Sets column names as the string in :fields vector
+            (getColumnName [col]
+                    (nth (get-col-names database) col))
+            ;;Uses column name as keyword to get value in row tuple
+            (getValueAt [row col]
+                    (get (nth (get-records database) row)
+                       (keyword (str (first (nth (get-fields database) col))))))
+        )
+
+        hdlBenjamin    (proxy [ActionListener][]
+                        (actionPerformed [event]
+                       	 (dosync (alter counter inc))
+                         (dosync (alter tRowN inc))
+                         (println @tRowN)
+                         (.addRow model (into-array (repeat (- (get-num-fields database) 1) &quot;ja&quot;)))
+                         
+                         (.setTableModel table model)
+                         (.repaint table)
+                         (.setText label
+                                (str (get-fields database)) )))
+                                
+        hdlShowall    (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (.setText label 
+                                (str(get-field-lengths database)))))
+
+        hdlAdd        (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (println &quot;adding...&quot;)
+                         (do (write-new-row testfilename
+                                  [&quot;La Jornada&quot; &quot;Aqui&quot; &quot;4&quot; &quot;N&quot; &quot;$1.00&quot; &quot;2000/01/01&quot; &quot;&quot;] (get-field-lengths database)))))
+
+        hdlUpdate     (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (for [pair (get-fields database)] (.addItem searchBox (.toUpperCase (str (first pair)))))
+                         (.setText label 
+                                (str (get-records database)))))
+                                
+        hdlDelete     (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (delete-record &quot;db-1x2 - copia.db&quot; 0 (get-offset database) (apply + (get-field-lengths database)))))
+                                
+        hdlFind     (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (.setText label 
+                                (get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))
+                                
+        hdlLock     (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (.setText label 
+                                (str (.getValueAt model 0 0) (.getValueAt model 0 1) (.getValueAt model 0 2)))))
+                                
+        hdlUnlock     (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         (dosync (alter counter inc))
+                         (.setText label
+                                (str &quot;Times pushed: &quot; @counter))))]
+    ;;;;;;;;;;;;; END LET
+        
+;;;;;;;FRAME
+    (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
+    (.setLayout frame (new BorderLayout))
+    
+;;;;;;;PANEL
+    ;(.setLayout         tPanel (new FlowLayout))
+    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
+    
+    (.setLayout         fPanel (new FlowLayout))
+    (.setPreferredSize  fPanel (Dimension. (+ 20 btnSX) (+ 20 (* 3 btnSY))))
+    
+    (.setLayout         bPanel (new FlowLayout))
+    (.setPreferredSize  bPanel (Dimension. (+ 20 btnSX) (- tableSY (+ 20(* btnSY 3)))))
+    
+    (.setLayout         abPanel (new FlowLayout))
+    (.setPreferredSize  abPanel (Dimension. (+ 20 btnSX) tableSY))
+    
+    ;(.setBackground     tPanel  (Color/yellow))
+    ;(.setBackground     fPanel  (Color/cyan))
+    ;(.setBackground     bPanel  (Color/magenta))
+    ;(.setBackground     abPanel (Color/black))
+    
+    
+;;;;;;;TABLE
+    (.setModel table model)
+    (.setPreferredSize table (Dimension. tableSX tableSY))
+    (.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
+    (.setFillsViewportHeight table true)
+    (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
+    
+;;;;;;;BUTTON
+    (.setPreferredSize benjamin     (Dimension. btnSX btnSY))
+    (.setPreferredSize btnShowall   (Dimension. btnSX btnSY))
+    (.setPreferredSize btnAdd       (Dimension. btnSX btnSY))
+    (.setPreferredSize btnUpdate    (Dimension. btnSX btnSY))
+    (.setPreferredSize btnDelete    (Dimension. btnSX btnSY))
+    (.setPreferredSize btnFind      (Dimension. btnSX btnSY))
+    (.setPreferredSize btnLock      (Dimension. btnSX btnSY))
+    (.setPreferredSize btnUnlock    (Dimension. btnSX btnSY))
+      ;;enable
+    ;(.setEnabled btnAdd false)
+    
+    
+;;;;;;;TEXTFIELD
+    (.setPreferredSize searchField  (Dimension. btnSX btnSY))
+    
+;;;;;;;COMBOBOX
+    (.setPreferredSize searchBox    (Dimension. btnSX btnSY))
+    
+;;;;;;;LABEL
+    (.setPreferredSize label        (Dimension. windowSX 25))
+    
+;;;;;;;ADDS
+    ;(.add tPanel (.getTableHeader table) BorderLayout/NORTH)
+    ;(.add tPanel tScrPane)
+    ;(.add tPanel BorderLayout/SOUTH table)
+    
+    (.add fPanel BorderLayout/NORTH searchField)
+    (.add fPanel BorderLayout/CENTER searchBox)
+    (.add fPanel BorderLayout/SOUTH btnFind)
+    
+    (.add bPanel benjamin)
+    (.add bPanel btnShowall)
+    (.add bPanel btnAdd)
+    (.add bPanel btnUpdate)
+    (.add bPanel btnDelete)
+    (.add bPanel btnLock)
+    (.add bPanel btnUnlock)
+    
+    (.add abPanel BorderLayout/NORTH fPanel)
+    (.add abPanel BorderLayout/SOUTH bPanel)
+    
+    (.add frame BorderLayout/CENTER tScrPane)
+    (.add frame BorderLayout/EAST abPanel)
+    (.add frame BorderLayout/PAGE_END label)
+    
+    ;;;ACTION LISTENERS
+    (.addActionListener benjamin hdlBenjamin)
+    (.addActionListener btnShowall hdlShowall)
+    (.addActionListener btnAdd hdlAdd)
+    (.addActionListener btnUpdate hdlUpdate)
+    (.addActionListener btnDelete hdlDelete)
+    (.addActionListener btnFind hdlFind)
+    (.addActionListener btnLock hdlLock)
+    (.addActionListener btnUnlock hdlUnlock)
+    (.addTableModelListener model tListener)
+    
+    (.pack frame)
+    (.setVisible frame true)
+    (.setSize frame windowSX windowSY)
+  )
+)</pre></div></div></dd></dl></li></ol></div></div></body></html>
