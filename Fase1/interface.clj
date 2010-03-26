@@ -2,12 +2,20 @@
     (:require clojure.contrib.swing-utils)
     (:use dbread dbwrite dbsearch)
 )
-(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter)
+(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon)
         '(javax.swing.table DefaultTableModel TableRowSorter)
         '(javax.swing.event TableModelListener)
         '(java.awt.event ActionListener)
+        '(java.util Collections)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
 )
+
+;;;;;DEFS
+(def table          (JTable. ))
+(def filename       "db-1x2 - copia.db");"db-1x2.db")
+(def testfilename   "db-1x2 - copia.db")
+(def database       (read-bin-file filename))
+
 
 (defn find-data
   "Finds specified data" 
@@ -49,51 +57,62 @@
 	"Returns a vector containing field lengths"
 	[db]
 	(vec (for [[_ len] (get db :fields)] len)))
-
   
+
 (defn fliplr
-  "Flips an array horizontally"
-  [arr]
-  arr
+  "Flips a tuple horizontally"
+  [tuple left right exleftval]
+  (aset tuple left (aget tuple right))
+  (aset tuple right exleftval)
+  tuple
 )
-  
+
 (defn records-to-array
-  "Transforms record dictionary into a 2d array"
-  [records]
-  (fliplr (to-array-2d records))
-;  (let [array []]
-;    (for [tuple records]
-;      
-;      (print (loop [filteredrow []   ituple tuple]
-;        (if (empty? ituple)
-; 
-; (filteredrow)
-;          (recur (conj filteredrow (str(first ituple)))(rest ituple))
-;        )
-;      ))
-;      
-;    )
-;  )
+  "Transforms record dictionary into a 2d array, keeps keywords."
+  [records numfields]
+  (let [records2d (to-array-2d records)]
+    (loop [i 0]
+        (if (< i (count records))
+            (do   (loop [lelem 0  relem (- numfields 1)] 
+                    (if (< lelem relem)
+                        (do (aset records2d i (fliplr (aget records2d i) lelem relem (aget records2d i lelem)))
+                            (recur (inc lelem) (dec relem)))
+                        ()))
+                   (recur (inc i))))                        
+    )
+    records2d
+  )
 )
 
-(def table          (JTable. ))
+(defn get-record2d-values
+  "Returns 2d array containing only values."
+  [records2d]
+  (loop [i 0]
+      (if (< i (alength records2d))
+          (do   (loop [j 0] 
+                  (if (< j (alength (aget records2d i)))
+                      (do (aset records2d i j (second (aget records2d i j)))
+                          (recur (inc j)))
+                      ()))
+                 (recur (inc i))))
+  )
+  records2d
+)
 
+        
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
-  (let [filename     "db-1x2 - copia.db";"db-1x2.db"
-        testfilename "db-1x2 - copia.db"
-        database     (read-bin-file filename)
-        
-        datamatrix   (agent (records-to-array (get-records database)))
+  (let [datamatrix   (agent (get-record2d-values (records-to-array (get-records database) (get-num-fields database))))
         
         windowSX     800
         windowSY     600
         labelH       25
         btnSX        150
         btnSY        30
+        topY         80
         tableSX      (- windowSX (+ 30 btnSX))
-        tableSY      (- windowSY labelH)
+        tableSY      (- windowSY labelH topY)
         
         frame       (JFrame. title)
         hPanel      (JPanel. )
@@ -111,6 +130,7 @@
         searchBox   (JComboBox. (to-array (get-col-names database)))
         
         label       (JLabel. "Something")
+        imgLabel    (JLabel.)
         
         counter     (ref 0)
         tRowN       (ref (count (get-records database)))
@@ -147,13 +167,14 @@
         )
         
         
-        ;;Handlers
+        ;;;;;Handlers
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
                          (dosync (alter counter inc))
                          
                          (.setText label 
-                              (str (alength datamatrix)))))
+                              (get-col-names database))))
+                              ;(str (nth(nth (nth @datamatrix 0) 0)0)))))
                               ;(str "r "(.getSelectedRow table) " c " (.getSelectedColumn table)))))
 
         hdlAdd        (proxy [ActionListener][]
@@ -194,7 +215,7 @@
     
 ;;;;;;;PANEL
     (.setLayout         hPanel (new FlowLayout))
-    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
+    (.setPreferredSize  hPanel (Dimension. windowSX topY))
     
     (.setLayout         fPanel (new FlowLayout))
     (.setPreferredSize  fPanel (Dimension. (+ 20 btnSX) (+ 20 (* 3 btnSY))))
@@ -212,6 +233,7 @@
     
     
 ;;;;;;;TABLE
+    ;(.setAutoResizeMode table JTable/AUTO_RESIZE_OFF)
     (.setModel table model)
     ;(.setRowSorter table colFilter)
     (.setPreferredSize table (Dimension. tableSX tableSY))
@@ -239,11 +261,11 @@
     
 ;;;;;;;LABEL
     (.setPreferredSize label        (Dimension. windowSX 25))
+    (.setPreferredSize imgLabel (Dimension. 600,90))
+    (.setIcon imgLabel (ImageIcon. "urly.jpg"))
     
 ;;;;;;;ADDS
-    ;(.add hPanel image BorderLayout/CENTER)
-    ;(.add hPanel tScrPane)
-    ;(.add hPanel BorderLayout/SOUTH table)
+    (.add hPanel imgLabel BorderLayout/CENTER)
     
     (.add fPanel BorderLayout/NORTH searchField)
     (.add fPanel BorderLayout/CENTER searchBox)
@@ -257,7 +279,7 @@
     (.add abPanel BorderLayout/NORTH fPanel)
     (.add abPanel BorderLayout/SOUTH bPanel)
     
-    ;(.add frame BorderLayout/NORTH hPanel)
+    (.add frame BorderLayout/NORTH hPanel)
     (.add frame BorderLayout/CENTER tScrPane)
     (.add frame BorderLayout/EAST abPanel)
     (.add frame BorderLayout/PAGE_END label)
@@ -274,9 +296,6 @@
     (.pack frame)
     (.setVisible frame true)
     (.setSize frame windowSX windowSY)
-    
-    
-    
     
   )
 )
