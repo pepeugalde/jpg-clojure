@@ -13,8 +13,8 @@
 
 ;;;;;DEFS
 (def table          (JTable. ))
-(def filename       "db-1x2 - copia.db")
-(def testfilename   "db-1x2 - copia.db")
+(def filename       "db-1x2.db")
+(def testfilename   "db-1x2.db")
 (def database       (read-bin-file filename))
 (def datamatrix     (agent 
                         (get-record2d-values 
@@ -79,11 +79,21 @@
         tScrPane    (JScrollPane. table)
           
         model       (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names database))])
+        
         tListener   (proxy [TableModelListener] []
-           (tableChanged [event]
-               ;(println "Tipo: "(.getType event) " column: " (.getColumn event) " row: " (.getFirstRow event))))
+            (tableChanged [event]   
                (if (= 0 (.getType event))
-                   (do  (update-record-skip-deleted testfilename
+                   (do  ;(println "r: " (.getFirstRow event) " c: " (.getColumn event))
+                        ; (.setValueAt  model
+                                     ; (trim-value (.getValueAt model 
+                                                              ; (.getFirstRow event)
+                                                              ; (.getColumn event)) 
+                                                 ; (nth (get-field-lengths database) (.getColumn event)))
+                                     ; (.getFirstRow event)
+                                     ; (.getColumn event))
+                        
+                                     
+                        (update-record-skip-deleted testfilename
                                                    (to-array (get-trimmed-values (loop  [i (- (get-num-fields database) 1)  result ()] 
                                                                                       (if (> i -1)
                                                                                           (recur (dec i) (conj result (.getValueAt model (.getSelectedRow table) i)))
@@ -92,8 +102,10 @@
                                                    (get-field-lengths database)
                                                    (.getFirstRow event)
                                                    (get-offset database))
-                        (.setText label "Row updated"))
+                        ; (println "r: " (.getFirstRow event) " c: " (.getColumn event))
+                         (.setText label "Row updated"))
                     ())))
+                    
         sorter      (proxy [TableRowSorter]     [model])
         colFilter   (proxy [RowFilter]          []
              (include [entry filters]
