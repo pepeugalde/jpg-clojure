@@ -1,6 +1,5 @@
 ﻿    FALTA
 
-update
 find
 delete
 
@@ -10,5 +9,5 @@ _____________________________________________________
 
 filtrar borrados
 viewport de tabla (si agregas tuplas, no se ven)
-
+update
 
