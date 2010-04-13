@@ -1,5 +1,5 @@
 (ns proj-test
- (:use clojure.test dbread dbwrite dbsearch interface))
+ (:use clojure.test dbread dbwrite dbsearch interface dbget))
  
 (def filenm       "db-1x2.db")
 (def testfilenm   "db-1x2.db")
@@ -31,7 +31,7 @@
 
  ;;Check Flipper
 (deftest inter-fliplr
- 	 (let [tuple  (to-array ["a" "b" "c" "d"])
+	 (let [tuple  (to-array ["a" "b" "c" "d"])
         answer  (to-array ["c" "b" "a" "d"])
         left    0
         right   2
