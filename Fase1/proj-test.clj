@@ -1,8 +1,8 @@
 (ns proj-test
  (:use clojure.test dbread dbwrite dbsearch interface))
  
-(def filenm       "db-1x2 - copia.db")
-(def testfilenm   "db-1x2 - copia.db")
+(def filenm       "db-1x2.db")
+(def testfilenm   "db-1x2.db")
 (def datab        (read-bin-file filenm))
 
  ;;Loading File
