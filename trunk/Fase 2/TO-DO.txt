@@ -1,0 +1,13 @@
+﻿    FALTA
+
+find
+delete
+
+imagen
+_____________________________________________________
+    YA ESTUVO
+
+filtrar borrados
+viewport de tabla (si agregas tuplas, no se ven)
+update
+
