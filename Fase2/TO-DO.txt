@@ -3,10 +3,6 @@
 find
 delete
 
-al agregar tupla, seleccionar la ultima
-
-no permitir seleccion multiple
-
 recortar valores en tabla
 
 server
@@ -19,3 +15,7 @@ _____________________________________________________
 
 filtrar borrados
 update
+
+al agregar tupla, seleccionar la ultima
+
+no permitir seleccion multiple

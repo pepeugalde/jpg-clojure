@@ -129,7 +129,13 @@
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
                          (.setText label "Adding row...")
+                         ;add empty row
                          (.addRow model (into-array (vec (repeat (get-num-fields database) ""))))
+                         ;select the new row
+                         (.addRowSelectionInterval table (- (.getRowCount table) 1) (- (.getRowCount table) 1))
+                         ;scroll down to see it
+                         (.scrollRectToVisible table (.getCellRect table (- (.getRowCount table) 1) (.getColumnCount table) true))
+                         ;write in database
                          (write-new-row testfilename
                                   (vec (repeat (get-num-fields database) "")) (get-field-lengths database))
                          (.revalidate table)
@@ -148,12 +154,10 @@
 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         ;(print (find-data  (.getText searchField) "location" (get-records database)))
-                         ;(.setRowFilter sorter (.regexFilter colFilter (str "^" (.getText searchField)) (to-array [0])))
-                         (. sorter setRowFilter (RowFilter/regexFilter ".*foo.*" 0))
-                         (.setText label 
-                                "Filtered rows")))
-                                ;(get (nth (get-records database) (rem @counter (get-num-fields database))) :rate) )))]
+                         (.setRowFilter sorter (.regexFilter colFilter (str "^" (.getText searchField)) (to-array [0])))
+                         ;(. sorter setRowFilter (RowFilter/regexFilter ".*foo.*" 0))
+                         (.setText label "Filtered rows")))
+
   ]
                                 
     ;;;;;;;;;;;;; END LET
@@ -183,7 +187,9 @@
     
 ;;;;;;;TABLE
     (.setModel table model)
-    ;(.setRowSorter table colFilter)
+    (.setSelectionMode table 0)
+    (.setRowSorter table sorter)
+    
     ;(.setPreferredSize table (Dimension. tableSX tableSY))
     ;(.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
     ;(.setFillsViewportHeight table true)
