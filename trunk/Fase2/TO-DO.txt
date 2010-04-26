@@ -1,0 +1,21 @@
+﻿﻿    FALTA
+
+find
+delete
+
+al agregar tupla, seleccionar la ultima
+
+no permitir seleccion multiple
+
+recortar valores en tabla
+
+server
+
+client
+
+
+_____________________________________________________
+    YA ESTUVO
+
+filtrar borrados
+update
