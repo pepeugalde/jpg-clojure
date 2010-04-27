@@ -20,28 +20,30 @@
                         (get-record2d-values 
                           (records-to-array 
                             (filter-non-deleted 
-                              (get-records database)) 
-                          (get-num-fields database)))))
-
-
-(defn find-data
-  "Finds specified data" 
-  [sstring column list] 
-  (filter #(= ((keyword column) %) sstring) list))
+                              (get-records database))
+                            (get-num-fields database)))))
   
 (defn paintDeleted
   "Paints red deleted records in table"
-  [table]
+  []
   (loop [i 0]
         (if (< i (alength @datamatrix))
             (do (if (= true (aget @datamatrix i (get-num-fields database)))
                     (.setBackground (.getRow table i) Color/RED)
                     ())
                 (recur (inc i)))
-            ())
-  )
-)
+            ())))
 
+(defn printarray
+  [lol]
+  (loop [i 0]
+        (if (< i (alength @datamatrix))
+            (do (println (aget @datamatrix i (get-num-fields database)))
+                (if (= true (aget @datamatrix i (get-num-fields database)))
+                    (.setBackground (.getRow table 0) Color/RED)
+                    ())
+                (recur (inc i)))
+            ())))
 ;------------------------------------------------------------------
         
 (defn interface
@@ -65,7 +67,6 @@
         
         btnShowall  (JButton. "Show all")
         btnAdd      (JButton. "Add new row")
-        ;btnUpdate   (JButton. "Update selected row")
         btnDelete   (JButton. "Delete selected row")
         btnFind     (JButton. "Find")
         
@@ -83,59 +84,61 @@
         
         tListener   (proxy [TableModelListener] []
             (tableChanged [event]   
-               (if (= 0 (.getType event))
-                   (do  ;(println "r: " (.getFirstRow event) " c: " (.getColumn event))
-                        ; (.setValueAt  model
-                                     ; (trim-value (.getValueAt model 
-                                                              ; (.getFirstRow event)
-                                                              ; (.getColumn event)) 
-                                                 ; (nth (get-field-lengths database) (.getColumn event)))
-                                     ; (.getFirstRow event)
-                                     ; (.getColumn event))
-                        
-                                     
-                        (update-record-skip-deleted testfilename
-                                                   (to-array (get-trimmed-values (loop  [i (- (get-num-fields database) 1)  result ()] 
-                                                                                      (if (> i -1)
-                                                                                          (recur (dec i) (conj result (.getValueAt model (.getSelectedRow table) i)))
-                                                                                          result))
-                                                                                (get-field-lengths database)))
-                                                   (get-field-lengths database)
-                                                   (.getFirstRow event)
-                                                   (get-offset database))
-                        ; (println "r: " (.getFirstRow event) " c: " (.getColumn event))
-                         (.setText label "Row updated"))
-                    ())))
+                (if (= 0 (.getType event));;table changed
+                  (if (>  (.length (.getValueAt model
+                                                (.getFirstRow event)
+                                                (.getColumn event)))
+                          (nth (get-field-lengths database) (.getColumn event)))
+                      (.setValueAt  model ;;fires another event
+                                    (trim-value (.getValueAt model 
+                                                             (.getFirstRow event)
+                                                             (.getColumn event)) 
+                                                (nth (get-field-lengths database) (.getColumn event)))
+                                    (.getFirstRow event)
+                                    (.getColumn event))
+                      (do (update-record-skip-deleted testfilename
+                                                      (to-array (get-trimmed-values 
+                                                                    (loop  [i (- (get-num-fields database) 1)  result ()] 
+                                                                        (if (> i -1)
+                                                                            (recur (dec i) (conj result 
+                                                                                                 (.getValueAt model 
+                                                                                                              (.getSelectedRow table) i)))
+                                                                            result))
+                                                                 (get-field-lengths database)))
+                                                     (get-field-lengths database)
+                                                     (.getFirstRow event)
+                                                     (get-offset database))
+                          (.setText label "Row updated"))))))
                     
-        sorter      (proxy [TableRowSorter]     [model])
-        colFilter   (proxy [RowFilter]          []
-             (include [entry filters]
-                (loop [i 0  result true]
-                    (if (< i (count filters))
-                        (if (and result (not (= "" (nth filter i))))
-                            (recur (inc i) (.startsWith (.toString (.getValue entry i)) (nth filters i)))
-                            ())
-                        (result)))))
-        
+        sorter      (proxy [TableRowSorter] [model])
+        filter   (proxy [RowFilter]         []
+                (include [entry]
+                    (.contains (.getValueAt (.getModel entry) 
+                                            (.intValue (.getIdentifier entry)) 
+                                            (.getSelectedIndex searchBox)) ;;mod to skip
+                               (.getText searchField))))
         
         ;;;;;Handlers
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (dosync (alter counter inc))
-                         
-                         (.setText label 
-                              (str(.getSelectedColumn table)))))
+                         ;;erase filter
+                         (.setRowFilter sorter (RowFilter/regexFilter "" (int-array 0)))
+                         (printarray "LOL")
+                         (.setText label "All rows Displayed")))
+                         ;(.setText label (str(.getSelectedIndex searchBox)))))
 
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
                          (.setText label "Adding row...")
-                         ;add empty row
+                         ;;erase filter
+                         (.setRowFilter sorter (RowFilter/regexFilter "" (int-array 0)))
+                         ;;add empty row
                          (.addRow model (into-array (vec (repeat (get-num-fields database) ""))))
-                         ;select the new row
+                         ;;select the new row
                          (.addRowSelectionInterval table (- (.getRowCount table) 1) (- (.getRowCount table) 1))
-                         ;scroll down to see it
+                         ;;scroll down to see it
                          (.scrollRectToVisible table (.getCellRect table (- (.getRowCount table) 1) (.getColumnCount table) true))
-                         ;write in database
+                         ;;write in database
                          (write-new-row testfilename
                                   (vec (repeat (get-num-fields database) "")) (get-field-lengths database))
                          (.revalidate table)
@@ -154,8 +157,9 @@
 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (.setRowFilter sorter (.regexFilter colFilter (str "^" (.getText searchField)) (to-array [0])))
-                         ;(. sorter setRowFilter (RowFilter/regexFilter ".*foo.*" 0))
+                         ;(.setRowFilter sorter (RowFilter/regexFilter (.getText searchField) (int-array 0)))
+                         ;((DefaultRowSorter)table.getRowSorter()).setRowFilter(cust_rfilter)
+                         (.setRowFilter (.getRowSorter table) filter)
                          (.setText label "Filtered rows")))
 
   ]
@@ -194,9 +198,7 @@
     ;(.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
     ;(.setFillsViewportHeight table true)
     (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
-    ;(.setAutoCreateRowSorter table true)
     (.setRowSorter table sorter)
-    ;(.setModel sorter model)
     (.addTableModelListener model tListener)
     
     

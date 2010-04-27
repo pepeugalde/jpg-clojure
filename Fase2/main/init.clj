@@ -6,11 +6,8 @@
   ([] 
       (println "CLIENT GOES HERE"))
   ([arg]
-      ;(if (= arg "alone")
-      ;    (interface "Ronery mode ;__;")
-      ;    ()))
-      (cond (= arg "alone")  (println "1")
-            (= arg "server") (println "2")
+      (cond (= arg "alone")  (interface "Ronery mode ;__;")
+            (= arg "server") (println "SERVER GOES HERE")
             true             (println "ERROR! Valid args: \"\", \"alone\" and \"server\".")))
   ([a b & args]
       (println "ERROR! Valid args: \"\", \"alone\" and \"server\"."))
