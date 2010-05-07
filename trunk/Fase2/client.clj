@@ -2,6 +2,7 @@
 ;;; Script cliente.
 
 (use 'clojure.contrib.duck-streams)
+(:use util.interface)
 
 (import '(java.net Socket ServerSocket)
         '(java.io PrintWriter))
@@ -20,4 +21,5 @@
             (print (char c))
             (recur)))))))
 
+(interface "cliente")
 (peticiona)        
