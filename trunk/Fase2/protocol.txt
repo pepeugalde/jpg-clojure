@@ -1,0 +1,20 @@
+Protocol:
+
+Server can receive:
+
+update
+"upd{row}"
+
+delete
+"del{row}"
+
+add
+"add{row}"
+
+refresh
+"rfr"
+
+commit
+"cmt"
+
+
