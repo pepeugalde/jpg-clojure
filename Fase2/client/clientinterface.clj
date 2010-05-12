@@ -1,8 +1,9 @@
-(ns util.interface
+(ns client.clientinterface
     (:require clojure.contrib.swing-utils)
     (:use util.dbread util.dbwrite util.dbsearch util.dbget 
-          config.interfaceconfig))
-    
+          config.interfaceconfig config.csconfig))
+          
+(use 'clojure.contrib.duck-streams)
 (import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon)
         '(javax.swing.table DefaultTableModel TableRowSorter)
         '(javax.swing.event TableModelListener)
@@ -10,11 +11,11 @@
         '(java.awt.event ActionListener)
         '(java.util Collections)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
-)
+        '(java.net Socket ServerSocket)
+        '(java.io PrintWriter))
 
-;;;;;DEFS
+;------------------------------DEFS
 (def table          (JTable. ))
-(def filename       "./db/db-1x2.db")
 (def database       (read-bin-file filename))
 (def datamatrix     (agent 
                         (get-record2d-values 
@@ -22,7 +23,8 @@
                             (filter-non-deleted 
                               (get-records database))
                             (get-num-fields database)))))
-  
+
+;------------------------------FUNCTIONS
 (defn paintDeleted
   "Paints red deleted records in table"
   []
@@ -44,22 +46,24 @@
                     ())
                 (recur (inc i)))
             ())))
-;------------------------------------------------------------------
-        
+            
+;----------------------------------INTERFACE
 (defn interface
   "Displays the interface that will be used in the urlybird project"
   [title]
   (let [frame       (JFrame. title)
-  
         hPanel      (JPanel. ) ;Header
         fPanel      (JPanel. ) ;Find
         bPanel      (JPanel. ) ;Buttons
+        cbPanel     (JPanel. ) ;ClientButtons
         abPanel     (JPanel. ) ;All buttons
         
         btnShowall  (JButton. "Show all")
         btnAdd      (JButton. "Add new row")
         btnDelete   (JButton. "Delete selected row")
         btnFind     (JButton. "Find")
+        btnRefresh  (JButton. "Refresh")
+        btnCommit   (JButton. "Commit")
         
         searchField (JTextField. )
         searchBox   (JComboBox. (to-array (get-col-names database)))
@@ -102,6 +106,7 @@
                           (.setText label "Row updated"))))))
                     
         sorter      (proxy [TableRowSorter] [model])
+        
         filter   (proxy [RowFilter]         []
                 (include [entry]
                     (.contains (.getValueAt (.getModel entry) 
@@ -109,7 +114,7 @@
                                             (.getSelectedIndex searchBox)) ;;mod to skip
                                (.getText searchField))))
         
-        ;;;;;Handlers
+        ;;;;;;;;;;;HANDLERS
         hdlShowall    (proxy [ActionListener][]
                        (actionPerformed [event]
                          ;;erase filter
@@ -148,8 +153,18 @@
                        (actionPerformed [event]
                          (.setRowFilter (.getRowSorter table) filter)
                          (.setText label "Filtered rows")))
+                         
+        hdlRefresh  (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         ;do server thingies
+                         (.setText label "Refresh!")))
+                         
+        hdlCommit   (proxy [ActionListener][]
+                       (actionPerformed [event]
+                         ;do server thingies
+                         (.setText label "Commit!")))
 
-  ];;;;;;;;;;;;; END LET
+  ];;;;;END LET
     
     ;;;;;;;FRAME
     (.setDefaultCloseOperation frame JFrame/EXIT_ON_CLOSE)
@@ -163,16 +178,19 @@
     (.setPreferredSize  fPanel (Dimension. (+ 20 btnSX) (+ 20 (* 3 btnSY))))
     
     (.setLayout         bPanel (new FlowLayout))
-    (.setPreferredSize  bPanel (Dimension. (+ 20 btnSX) (- tableSY (+ 20(* btnSY 3)))))
+    (.setPreferredSize  bPanel (Dimension. (+ 20 btnSX) (+ 30(* btnSY 3))))
+    
+    (.setLayout         cbPanel (new FlowLayout))
+    (.setPreferredSize  cbPanel (Dimension. (+ 20 btnSX) (- tableSY (+ 50(* btnSY 6)))))
     
     (.setLayout         abPanel (new FlowLayout))
     (.setPreferredSize  abPanel (Dimension. (+ 20 btnSX) tableSY))
     
-    ;;DEBUG
     ;(.setBackground     hPanel  (Color/yellow))
     ;(.setBackground     fPanel  (Color/cyan))
     ;(.setBackground     bPanel  (Color/magenta))
     ;(.setBackground     abPanel (Color/black))
+    ;(.setBackground     cbPanel (Color/green))
     
     
     ;;;;;;;TABLE
@@ -193,18 +211,19 @@
     (.setPreferredSize btnAdd       (Dimension. btnSX btnSY))
     (.setPreferredSize btnDelete    (Dimension. btnSX btnSY))
     (.setPreferredSize btnFind      (Dimension. btnSX btnSY))
+    (.setPreferredSize btnRefresh   (Dimension. btnSX btnSY))
+    (.setPreferredSize btnCommit    (Dimension. btnSX btnSY))
 
       ;;enable
     ;(.setEnabled btnAdd false)
     
-    
-        ;;;;;;;TEXTFIELD
+    ;;;;;;;TEXTFIELD
     (.setPreferredSize searchField  (Dimension. btnSX defaultboxh))
     
-        ;;;;;;;COMBOBOX
+    ;;;;;;;COMBOBOX
     (.setPreferredSize searchBox    (Dimension. btnSX defaultboxh))
     
-        ;;;;;;;LABEL
+    ;;;;;;;LABEL
     (.setPreferredSize label        (Dimension. windowSX defaultboxh))
     (.setPreferredSize imgLabel (Dimension. windowSX topY))
     (.setIcon imgLabel (ImageIcon. "./img/urly.jpg"))
@@ -218,11 +237,14 @@
     
     (.add bPanel btnShowall)
     (.add bPanel btnAdd)
-    ;(.add bPanel btnUpdate)
     (.add bPanel btnDelete)
     
+    (.add cbPanel btnRefresh)
+    (.add cbPanel btnCommit)
+    
     (.add abPanel BorderLayout/NORTH fPanel)
-    (.add abPanel BorderLayout/SOUTH bPanel)
+    (.add abPanel BorderLayout/CENTER bPanel)
+    (.add abPanel BorderLayout/SOUTH cbPanel)
     
     (.add frame BorderLayout/NORTH hPanel)
     (.add frame BorderLayout/CENTER tScrPane)
@@ -232,9 +254,10 @@
     ;;;ACTION LISTENERS
     (.addActionListener btnShowall hdlShowall)
     (.addActionListener btnAdd hdlAdd)
-    ;(.addActionListener btnUpdate hdlUpdate)
     (.addActionListener btnDelete hdlDelete)
     (.addActionListener btnFind hdlFind)
+    (.addActionListener btnRefresh hdlRefresh)
+    (.addActionListener btnCommit hdlCommit)
 
     ;(.addTableModelListener model tListener)
     
@@ -242,5 +265,19 @@
     (.setVisible frame true)
     (.setSize frame windowSX windowSY)
   )
-  
 )
+
+;-------------------CLIENT FUNCTIONS
+(defn petition
+  "stuff happens"
+  []
+  (let [socket (Socket. *host* *port*)]
+    (with-open [input  (.getInputStream socket)
+                output (.getOutputStream socket)]
+      (println output)
+      ; (loop []
+        ; (let [c (.read input)]
+          ; (when (not= c -1)
+            ; (print (char c))
+            ; (recur))))
+             )))
