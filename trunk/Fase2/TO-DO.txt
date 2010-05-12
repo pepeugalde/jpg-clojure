@@ -1,14 +1,17 @@
-﻿﻿    FALTA
+﻿     FALTA
 
-find
-delete
+find con doble filtro
 
-recortar valores en tabla
+delete un record igual
+
+refresh
+
 
 server
 
 client
 
+video!
 
 _____________________________________________________
     YA ESTUVO
