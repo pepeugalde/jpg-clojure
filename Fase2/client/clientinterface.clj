@@ -12,7 +12,7 @@
         '(java.util Collections)
         '(java.awt BorderLayout FlowLayout GridLayout Dimension Color)
         '(java.net Socket ServerSocket)
-        '(java.io PrintWriter))
+        '(java.io PrintWriter InputStreamReader BufferedReader))
 
 ;------------------------------DEFS
 (def table          (JTable. ))
@@ -268,16 +268,26 @@
 )
 
 ;-------------------CLIENT FUNCTIONS
-(defn petition
+(defn say
+  [socket content]
+  (println "Saying: " content)
+  (with-open [output (PrintWriter. (.getOutputStream socket))]
+    (.print output content)))
+
+(defn connect
   "stuff happens"
   []
   (let [socket (Socket. *host* *port*)]
-    (with-open [input  (.getInputStream socket)
-                output (.getOutputStream socket)]
-      (println output)
+    (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)));(.getInputStream socket)
+                output (PrintWriter. (.getOutputStream socket))];(.getOutputStream socket)]
+                
+      (say socket "trololo")          
       ; (loop []
         ; (let [c (.read input)]
           ; (when (not= c -1)
             ; (print (char c))
             ; (recur))))
+      
+      
+      
              )))
