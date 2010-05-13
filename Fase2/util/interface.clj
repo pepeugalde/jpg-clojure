@@ -1,7 +1,7 @@
 (ns util.interface
     "This namespace contains functions which can display a simple interface for toying with a database."
     (:require clojure.contrib.swing-utils)
-    (:use util.dbread util.dbwrite util.dbsearch util.dbget 
+    (:use util.dbread util.dbwrite util.dbget 
           config.interfaceconfig))
     
 (import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon)
@@ -243,5 +243,4 @@
     (.setVisible frame true)
     (.setSize frame windowSX windowSY)
   )
-  
 )

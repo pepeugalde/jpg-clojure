@@ -33,6 +33,23 @@
             (recur (rest info) (rest size)))))
     (.flush printer))
   (println "ROW ADDED"))
+
+;-------------------------------------------------------------------------------
+(defn write-empty-row
+  "Inserts new registers into the database"
+  [file-name fields sizes];numfields numsizes]
+  (with-open [printer (FileOutputStream. file-name true)]  
+    (.write printer 
+            (byte-array [(byte 0x0000)(byte 0x0000)]))
+    (loop [info fields   size sizes]
+      (if (empty? info)
+        ()
+        (do (.write printer 
+                    (set-pad (first info) (first size)))
+            (recur (rest info) (rest size)))))
+    (.flush printer))
+  (println "ROW ADDED"))
+  
 ;-------------------------------------------------------------------------------
 (defn set-del-flag
   "Sets to 0x8000 the :deleted flag"
@@ -43,6 +60,7 @@
     (.write writer (byte-array [(byte 0x80)(byte 0x00)]) 
                    0 
                    2)))
+                   
 ;-------------------------------------------------------------------------------
 (defn delete-record-skip-deleted
   "Deletes a record by changing its deleted flag, doesn't consider deleted records"
