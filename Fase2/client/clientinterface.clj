@@ -304,7 +304,7 @@
                 output (PrintWriter. (.getOutputStream socket))]
 
       ;;Attempt connection
-      (say output randomID "sup" "trolololo lololo lololo")          
+      (say output randomID "add" "trolololo lololo lololo")          
       ;;wait for response
       ;hear
       
