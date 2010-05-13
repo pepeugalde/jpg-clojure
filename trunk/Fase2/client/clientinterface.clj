@@ -17,33 +17,38 @@
         '(java.io PrintWriter InputStreamReader BufferedReader))
 
 ;------------------------------RANDOM ID STRING
-(def VALID-CHARS
 "Defines the valid characters that will be used in random-char function"
+(def VALID-CHARS
   (map char (concat (range 48 58) ; 0-9
   (range 66 91) ; A-Z
   (range 97 123)))) ; a-z
 
-(defn random-char []
 "Creates a random char"
-      (nth VALID-CHARS (rand (count VALID-CHARS))))
+(defn random-char []
+    (nth VALID-CHARS (rand (count VALID-CHARS))))
 
-(defn random-str [length]
 "Creates a random string"
-     (apply str (take length (repeatedly random-char))))
+(defn random-str [length]
+    (apply str (take length (repeatedly random-char))))
 
-(def randomID 
 "Defines the random ID that will be used as a client identifier"
-(random-str IDlength))
+(def randomID (random-str IDlength))
+
 ;------------------------------DEFS
-(def table    "Defines the JTable used by the database"      (JTable. ))
-(def database  "Defines the file that will be readed as a database"     (read-bin-file filename))
-(def datamatrix  "Defines the matrix in which the database will de displayed"
+"Defines the JTable used by the database"
+(def table          (JTable. ))
+
+"Defines the file that will be readed as a database"
+(def database       (read-bin-file filename))
+
+"Defines the matrix in which the database will de displayed"
+(def datamatrix  
 			(agent 
-                        (get-record2d-values 
-                          (records-to-array 
-                            (filter-non-deleted 
-                              (get-records database))
-                            (get-num-fields database)))))
+        (get-record2d-values 
+          (records-to-array 
+            (filter-non-deleted 
+              (get-records database))
+            (get-num-fields database)))))
 
 ;------------------------------FUNCTIONS
 (defn paintDeleted
@@ -309,3 +314,4 @@
              
 ;----------------------TEST
 ;(println randomID)
+(connect)

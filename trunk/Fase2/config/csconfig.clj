@@ -16,5 +16,8 @@
 ;Default server ID
 (def serverID "SERVER")
 
+;Default performative length
+(def perflength 3)
+
 ;Performative's vector
 (def performatives {:update "upd", :delete "del", :add "add", :refresh "rfr", :commit "cmt"})
