@@ -1,9 +1,10 @@
 (ns util.dbwrite
-    "This namespace contains functions that demonstrate how to read a binary 
-    file. It specifically allows reading the URLyBird database file."  
-    (:import (java.io FileOutputStream DataOutputStream PrintStream BufferedWriter FileWriter PrintWriter  
-                    FileInputStream DataInputStream RandomAccessFile))
-    (:use util.dbread util.dbsearch))
+    "This namespace contains functions that can overwrite or replace parts of 
+    a binary file. It specifically allows reading the URLyBird database file."  
+    (:import (java.io FileOutputStream DataOutputStream PrintStream 
+                      BufferedWriter FileWriter PrintWriter
+                      FileInputStream DataInputStream RandomAccessFile))
+    (:use util.dbread))
 
 ;-------------------------------------------------------------------------------
 (defn str-from-b-seq 
@@ -44,7 +45,7 @@
                    2)))
 ;-------------------------------------------------------------------------------
 (defn delete-record-skip-deleted
-  "Deletes a record by changing its flag, doesn't consider deleted records"
+  "Deletes a record by changing its deleted flag, doesn't consider deleted records"
   [file-name delrow offset rowlen]
   (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
     (.skipBytes reader 
@@ -63,7 +64,7 @@
   (println "ROW DELETED"))
 ;-------------------------------------------------------------------------------
 (defn delete-record
-  "Deletes a record by changing its flag, counts deleted records"
+  "Deletes a record by changing its deleted flag, counts deleted records"
   [file-name delrow offset rowlen]
   (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
     (.skipBytes reader offset)

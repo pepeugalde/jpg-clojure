@@ -1,6 +1,8 @@
 (ns client.clientinterface
+    "This namespace contains functions used to display a simple 
+    interface and connect it with a server."
     (:require clojure.contrib.swing-utils)
-    (:use util.dbread util.dbwrite util.dbsearch util.dbget 
+    (:use util.dbread util.dbwrite util.dbget 
           config.interfaceconfig config.csconfig))
           
 (use 'clojure.contrib.duck-streams)
@@ -278,10 +280,10 @@
   "stuff happens"
   []
   (let [socket (Socket. *host* *port*)]
-    (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)));(.getInputStream socket)
-                output (PrintWriter. (.getOutputStream socket))];(.getOutputStream socket)]
+    (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)))
+                output (PrintWriter. (.getOutputStream socket))]
                 
-      (say socket "trololo")          
+      (say socket "upfg trololo")          
       ; (loop []
         ; (let [c (.read input)]
           ; (when (not= c -1)

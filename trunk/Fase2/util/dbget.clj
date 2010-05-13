@@ -1,5 +1,6 @@
 (ns util.dbget
     "This namespace contains functions that get specific values from a database.")
+    
 ;-------------------------------------------------------------------------------
 (defn get-magic
     "Returns magic number from a database"

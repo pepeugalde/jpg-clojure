@@ -1,4 +1,5 @@
 (ns util.interface
+    "This namespace contains functions which can display a simple interface for toying with a database."
     (:require clojure.contrib.swing-utils)
     (:use util.dbread util.dbwrite util.dbsearch util.dbget 
           config.interfaceconfig))
