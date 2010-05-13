@@ -1,15 +1,20 @@
-Protocol:
-"Every message rceived by the server has the format given in the data base"
-Server can receive:
+PROTOCOL:
+Every message sent and received by both clients and server has the following format:
+
+ID string with length "IDlength" as defined in "csconfig.clj"
+
+Clients can receive following performatives:
+
+Server can receive following performatives:
 
 update
-"upd{:name :location :size :smoking :rate :date :owner}"
+"upd{:name :location :size :smoking :rate :date :owner}" (formatted as in database)
 
 delete
-"del{:name :location :size :smoking :rate :date :owner}"
+"del{:name :location :size :smoking :rate :date :owner}" (formatted as in database)
 
 add
-"add{:name :location :size :smoking :rate :date :owner}"
+"add{:name :location :size :smoking :rate :date :owner}" (formatted as in database)
 
 refresh
 "rfr"

@@ -2,7 +2,7 @@
     "This namespace contains functions used to display a simple 
     interface and connect it with a server."
     (:require clojure.contrib.swing-utils)
-    (:use util.dbread util.dbwrite util.dbget 
+    (:use util.dbread util.dbwrite util.dbget util.csutils
           config.interfaceconfig config.csconfig))
           
 (use 'clojure.contrib.duck-streams)
@@ -16,6 +16,19 @@
         '(java.net Socket ServerSocket)
         '(java.io PrintWriter InputStreamReader BufferedReader))
 
+;------------------------------RANDOM ID STRING
+(def VALID-CHARS
+  (map char (concat (range 48 58) ; 0-9
+  (range 66 91) ; A-Z
+  (range 97 123)))) ; a-z
+
+(defn random-char []
+      (nth VALID-CHARS (rand (count VALID-CHARS))))
+
+(defn random-str [length]
+     (apply str (take length (repeatedly random-char))))
+
+(def randomID (random-str IDlength))
 ;------------------------------DEFS
 (def table          (JTable. ))
 (def database       (read-bin-file filename))
@@ -270,11 +283,6 @@
 )
 
 ;-------------------CLIENT FUNCTIONS
-(defn say
-  [socket content]
-  (println "Saying: " content)
-  (with-open [output (PrintWriter. (.getOutputStream socket))]
-    (.print output content)))
 
 (defn connect
   "stuff happens"
@@ -282,14 +290,15 @@
   (let [socket (Socket. *host* *port*)]
     (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)))
                 output (PrintWriter. (.getOutputStream socket))]
-                
-      (say socket "upfg trololo")          
-      ; (loop []
-        ; (let [c (.read input)]
-          ; (when (not= c -1)
-            ; (print (char c))
-            ; (recur))))
+
+      ;;Attempt connection
+      (say output randomID "sup" "trolololo lololo lololo")          
+      ;;wait for response
+      ;hear
       
       
       
              )))
+             
+;----------------------TEST
+;(println randomID)
