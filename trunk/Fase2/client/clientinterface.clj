@@ -18,21 +18,27 @@
 
 ;------------------------------RANDOM ID STRING
 (def VALID-CHARS
+"Defines the valid characters that will be used in random-char function"
   (map char (concat (range 48 58) ; 0-9
   (range 66 91) ; A-Z
   (range 97 123)))) ; a-z
 
 (defn random-char []
+"Creates a random char"
       (nth VALID-CHARS (rand (count VALID-CHARS))))
 
 (defn random-str [length]
+"Creates a random string"
      (apply str (take length (repeatedly random-char))))
 
-(def randomID (random-str IDlength))
+(def randomID 
+"Defines the random ID that will be used as a client identifier"
+(random-str IDlength))
 ;------------------------------DEFS
-(def table          (JTable. ))
-(def database       (read-bin-file filename))
-(def datamatrix     (agent 
+(def table    "Defines the JTable used by the database"      (JTable. ))
+(def database  "Defines the file that will be readed as a database"     (read-bin-file filename))
+(def datamatrix  "Defines the matrix in which the database will de displayed"
+			(agent 
                         (get-record2d-values 
                           (records-to-array 
                             (filter-non-deleted 
@@ -52,6 +58,7 @@
             ())))
 
 (defn printarray
+"Reads the data base information that will be written in a matrix"
   [lol]
   (loop [i 0]
         (if (< i (alength @datamatrix))
@@ -285,7 +292,7 @@
 ;-------------------CLIENT FUNCTIONS
 
 (defn connect
-  "stuff happens"
+  "Establishes the connection between the client and server"
   []
   (let [socket (Socket. *host* *port*)]
     (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)))
