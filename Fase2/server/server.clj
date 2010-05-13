@@ -18,6 +18,7 @@
 
 ;---------------FUNCTIONS
 (defn myagent-action
+"Defines an agent's action"
   [_ socket content]
   (with-open [input  (.getInputStream socket)
               output (PrintWriter. (.getOutputStream socket))]
@@ -25,6 +26,7 @@
     ))
 
 (defn hear
+"Waits for a message sent by the client to perform an specific action"
   [input]
   (let msg (loop [recmsg ""]
             (let [c (.read input)]
@@ -33,6 +35,7 @@
                   recmsg))))
     
 (defn whaaat
+"Performs an action depending on the message received by the client"
   [message]
   (let [instruction (apply str(take 3 message))]
   (cond (= instruction "upd") ((println "Updating...")
@@ -53,6 +56,7 @@
     
 ;-------------MAIN SERVER FUNCTION
 (defn serve
+"Initializes the server"
   []
   (let [content      (slurp filename)
         server       (ServerSocket. *port*)
