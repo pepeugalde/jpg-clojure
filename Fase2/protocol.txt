@@ -1,15 +1,15 @@
 Protocol:
-
+"Every message rceived by the server has the format given in the data base"
 Server can receive:
 
 update
-"upd{row}"
+"upd{:name :location :size :smoking :rate :date :owner}"
 
 delete
-"del{row}"
+"del{:name :location :size :smoking :rate :date :owner}"
 
 add
-"add{row}"
+"add{:name :location :size :smoking :rate :date :owner}"
 
 refresh
 "rfr"
