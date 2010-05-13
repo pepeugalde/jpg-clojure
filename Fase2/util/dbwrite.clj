@@ -37,17 +37,15 @@
 ;-------------------------------------------------------------------------------
 (defn write-empty-row
   "Inserts new registers into the database"
-  [file-name fields sizes];numfields numsizes]
-  (with-open [printer (FileOutputStream. file-name true)]  
+  [filename sizes]
+  (let [totalsize (apply + sizes)
+  	emptystring (apply str (repeat totalsize " "))]
+  (with-open [printer (FileOutputStream. filename true)]  
     (.write printer 
             (byte-array [(byte 0x0000)(byte 0x0000)]))
-    (loop [info fields   size sizes]
-      (if (empty? info)
-        ()
-        (do (.write printer 
-                    (set-pad (first info) (first size)))
-            (recur (rest info) (rest size)))))
-    (.flush printer))
+            (.write printer  emptystring)
+            (.write printer  "I Work")
+  	(.flush printer)))
   (println "ROW ADDED"))
   
 ;-------------------------------------------------------------------------------
