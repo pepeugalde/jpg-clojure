@@ -15,3 +15,6 @@
 
 ;Default server ID
 (def serverID "SERVER")
+
+;Performative's vector
+(def performatives {:update "upd", :delete "del", :add "add", :refresh "rfr", :commit "cmt"})
