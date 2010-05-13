@@ -42,7 +42,9 @@
           ())
       (= perf (get performatives :add)) 
           ((println "Adding new row...")
-          ()
+          	  (println (str (first get-field-lengths)))
+          (write-empty-row filename
+                           get-field-lengths)
           (println "Row added."))
       (= perf (get performatives :refresh)) 
           ((println "Refreshing...")
