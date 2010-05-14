@@ -7,17 +7,18 @@
 ;Default host to be used
 (def *host*   "localhost")
 
-;Default database file name to be used
-(def filename "./db/db-1x2.db")
+;Default database file names to be used
+(def sfilename "./db/db-1x2.db")
+(def cfilename "./db/db-1x2 - copia.db")
 
 ;Default ID length
 (def IDlength 10)
 
 ;Default server ID
-(def serverID "SERVER")
+(def serverID "SERVER----")
 
 ;Default performative length
 (def perflength 3)
 
 ;Performative's vector
-(def performatives {:update "upd", :delete "del", :add "add", :refresh "rfr", :commit "cmt"})
+(def performatives {:ok "ok!", :no "no!", :outdated "out", :hi "hi!", :update "upd", :delete "del", :add "add", :refresh "rfr", :commit "cmt"})

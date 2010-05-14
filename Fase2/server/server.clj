@@ -13,10 +13,13 @@
 ;---------------DEFS
 ;;Each time a client connects, it sends an id
 ;;The server stores the id to send updates
-(def clientlist (ref #{}))
+(def clientlist  (ref #{}))
 
 "Defines the file that will be readed as a database"
-(def database       (read-bin-file filename))
+(def databaseref    (ref (read-bin-file sfilename)))
+
+"Defines a reference to the content"
+(def filecontent (ref (slurp sfilename)))
 
 ;---------------FUNCTIONS
 (defn myagent-action
@@ -26,60 +29,66 @@
               output (PrintWriter. (.getOutputStream socket))]
     (.print output content)))
     
-(defn whaaat
-  "Performs an action depending on the message received by the client"
-  [[sender perf content]]
+(defn react
+  "Performs an action accoding to message performative."
+  [output [sender perf content]]
   ;;If client is new, add it to list
   (dosync (alter clientlist conj sender))
   ;(println "Clients: " @clientlist)
-  ;;act 
-  (cond (= perf (get performatives :update)) 
+  ;;Act according to performative
+  (cond (= perf (get performatives :hi))
+           ;;compare versions
+           (if (= content (str (get-records @databaseref)))
+               ;;client has same version
+               (do (println "Client has same version.")
+                   (say output sender (get performatives :ok) ""))
+               ;;client has other version
+               (do (println "Client has different version.")
+                   (let [sfilecontent (apply str (drop (get-offset @databaseref) (slurp sfilename)))]
+                   (println sfilecontent)
+                   (say output sender (get performatives :outdated) sfilecontent))))
+        (= perf (get performatives :update)) 
           ((println "Updating...")
           (println "seaking")
           (println "Update done."))
-      (= perf (get performatives :delete)) 
+        (= perf (get performatives :delete)) 
           ((println "Deleting...")
           ())
-      (= perf (get performatives :add)) 
+        (= perf (get performatives :add)) 
           ((println "Adding new row...")
-          	  (println (str (first get-field-lengths)))
-          (write-empty-row filename
-                           get-field-lengths)
+          (write-empty-row sfilename (get-field-lengths @databaseref))
           (println "Row added."))
-      (= perf (get performatives :refresh)) 
+        (= perf (get performatives :refresh)) 
           ((println "Refreshing...")
           ()
           (println "Refreshing done."))
-      (= perf (get performatives :commit)) 
+        (= perf (get performatives :commit)) 
           ((println "Committing...")
           ()
           (println "Commit done."))
-      true (println (str "Performative is \"" perf "\"??? I DUNNO WTF TO DO..."))))
+        true (println (str "Performative is \"" perf "\"??? I DUNNO WTF TO DO..."))))
     
 ;-------------MAIN SERVER FUNCTION
 (defn serve
 "Initializes the server"
   []
-  (let [content      (slurp filename)
-        server       (ServerSocket. *port*)
+  (let [content      (slurp sfilename)
+        ssocket       (ServerSocket. *port*)
         myagent      (agent nil)]
         
     (loop []
       (println "\nWaiting for connection...")      
-      (let [socket (.accept server)]
+      (let [csocket (.accept ssocket)]
         (println "Connection accepted")
-        ;(println "agent before " @myagent)
-        ;(send-off myagent myagent-action socket content)
-        ;(println "agent after " @myagent)
         
-        ;---HEARING LOOP
-        (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream socket)))
-                    output (PrintWriter. (.getOutputStream socket))]
+        ;---HEAR
+        (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream csocket)))
+                    output (PrintWriter. (.getOutputStream csocket))]
         
-          (whaaat (hear input))
-
-        )
+          (react output (hear input)))
+          
         (recur)))))
 
 ;-----------TEST
 (serve)
+;(write-empty-row sfilename (get-field-lengths @databaseref))

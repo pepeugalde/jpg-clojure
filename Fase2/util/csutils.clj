@@ -2,41 +2,33 @@
     "This namespace contains functions used by clients and servers."
      (:use config.csconfig))
 
-;(import '(java.io PrintWriter InputStreamReader BufferedReader))
-    
+
 (defn say
-  "Print a string containing sender ID , business and content 
+  "Print a string containing sender ID , performative and content 
   through the output."
   [output sender perf content]
-  (println "Saying: \"" (apply str sender perf content) "\"")
-  (.print output (apply str sender perf content)))
-    
-; (defn hear
-  ; "Read a string from the input."
-  ; [input]
-  ; (loop [recmsg ""]
-    ; (let [c (.read input)]
-      ; (if (not= c -1)
-          ; (recur (str recmsg (str(char c))))
-          ; recmsg))))
+  (println "Saying: \"" sender "\" Perf: \""perf "\"");content "\"")
+  (.print output (apply str sender perf content  "\n"))
+  (.flush output))
 
 (defn hear
   "Waits for a message sent by client or server.
   Returns a vector containing sender, performative and content"
   [input]
-  (let [wholemsg  (loop [recmsg ""]
-                    (let [c (.read input)]
-                      (if (not= c -1)
-                          (recur (str recmsg (str(char c))))
-                          recmsg)))
+   (let [wholemsg  (.readLine input);(loop [recmsg ""]
+                    ; (let [c (.read input)]
+                      ; (print (char c))
+                      ; (if (not= c "\n")
+                          ; (recur (str recmsg (str(char c))))
+                          ; recmsg)))
         sender    (apply str (take IDlength wholemsg))
         perf      (apply str (take perflength (drop IDlength wholemsg)))
-        content   (apply str (drop (+ IDlength perflength) wholemsg))]
-        
+        content   (apply str (drop (+ IDlength perflength) wholemsg))
+        ]
+    ;(println "whole: " wholemsg)
     (println "Heard message from: " sender " Performative: " perf)
-    (println "Content: " content)
+    ;(println "Content: " content)
     
-    [sender perf content]
-    ))
+    [sender perf content]))
 
 ;----TEST

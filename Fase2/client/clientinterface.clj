@@ -6,7 +6,7 @@
           config.interfaceconfig config.csconfig))
           
 (use 'clojure.contrib.duck-streams)
-(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon)
+(import '(javax.swing JFrame JPanel JButton JLabel JTable JScrollPane JTextField JComboBox RowFilter ImageIcon JOptionPane)
         '(javax.swing.table DefaultTableModel TableRowSorter)
         '(javax.swing.event TableModelListener)
         '(java.awt Rectangle)
@@ -35,20 +35,22 @@
 (def randomID (random-str IDlength))
 
 ;------------------------------DEFS
-"Defines the JTable used by the database"
+"Defines the JTable used by the @databaseref"
 (def table          (JTable. ))
 
-"Defines the file that will be readed as a database"
-(def database       (read-bin-file filename))
+"Message/Status label"
+(def label          (JLabel. "Welcome!"))
 
-"Defines the matrix in which the database will de displayed"
-(def datamatrix  
-			(agent 
-        (get-record2d-values 
-          (records-to-array 
-            (filter-non-deleted 
-              (get-records database))
-            (get-num-fields database)))))
+"Defines the file that will be readed as a @databaseref"
+(def databaseref       (ref(read-bin-file cfilename)))
+
+"Defines the matrix in which the @databaseref will de displayed"
+(def datamatrix     (agent 
+                      (get-record2d-values 
+                        (records-to-array 
+                          (filter-non-deleted 
+                            (get-records @databaseref))
+                          (get-num-fields @databaseref)))))
 
 ;------------------------------FUNCTIONS
 (defn paintDeleted
@@ -56,7 +58,7 @@
   []
   (loop [i 0]
         (if (< i (alength @datamatrix))
-            (do (if (= true (aget @datamatrix i (get-num-fields database)))
+            (do (if (= true (aget @datamatrix i (get-num-fields @databaseref)))
                     (.setBackground (.getRow table i) Color/RED)
                     ())
                 (recur (inc i)))
@@ -67,8 +69,8 @@
   [lol]
   (loop [i 0]
         (if (< i (alength @datamatrix))
-            (do (println (aget @datamatrix i (get-num-fields database)))
-                (if (= true (aget @datamatrix i (get-num-fields database)))
+            (do (println (aget @datamatrix i (get-num-fields @databaseref)))
+                (if (= true (aget @datamatrix i (get-num-fields @databaseref)))
                     (.setBackground (.getRow table 0) Color/RED)
                     ())
                 (recur (inc i)))
@@ -93,16 +95,15 @@
         btnCommit   (JButton. "Commit")
         
         searchField (JTextField. )
-        searchBox   (JComboBox. (to-array (get-col-names database)))
+        searchBox   (JComboBox. (to-array (get-col-names @databaseref)))
         
-        label       (JLabel. "Welcome!")
         imgLabel    (JLabel.)
         
         counter     (ref 0)
 
         tScrPane    (JScrollPane. table)
           
-        model       (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names database))])
+        model       (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names @databaseref))])
         
         tListener   (proxy [TableModelListener] []
             (tableChanged [event]   
@@ -110,26 +111,26 @@
                   (if (>  (.length (.getValueAt model
                                                 (.getFirstRow event)
                                                 (.getColumn event)))
-                          (nth (get-field-lengths database) (.getColumn event)))
+                          (nth (get-field-lengths @databaseref) (.getColumn event)))
                       (.setValueAt  model ;;fires another event
                                     (trim-value (.getValueAt model 
                                                              (.getFirstRow event)
                                                              (.getColumn event)) 
-                                                (nth (get-field-lengths database) (.getColumn event)))
+                                                (nth (get-field-lengths @databaseref) (.getColumn event)))
                                     (.getFirstRow event)
                                     (.getColumn event))
-                      (do (update-record-skip-deleted testfilename
+                      (do (update-record-skip-deleted cfilename
                                                       (to-array (get-trimmed-values 
-                                                                    (loop  [i (- (get-num-fields database) 1)  result ()] 
+                                                                    (loop  [i (- (get-num-fields @databaseref) 1)  result ()] 
                                                                         (if (> i -1)
                                                                             (recur (dec i) (conj result 
                                                                                                  (.getValueAt model 
                                                                                                               (.getSelectedRow table) i)))
                                                                             result))
-                                                                 (get-field-lengths database)))
-                                                     (get-field-lengths database)
+                                                                 (get-field-lengths @databaseref)))
+                                                     (get-field-lengths @databaseref)
                                                      (.getFirstRow event)
-                                                     (get-offset database))
+                                                     (get-offset @databaseref))
                           (.setText label "Row updated"))))))
                     
         sorter      (proxy [TableRowSorter] [model])
@@ -154,14 +155,14 @@
                          ;;erase filter
                          (.setRowFilter sorter (RowFilter/regexFilter "" (int-array 0)))
                          ;;add empty row
-                         (.addRow model (into-array (vec (repeat (get-num-fields database) ""))))
+                         (.addRow model (into-array (vec (repeat (get-num-fields @databaseref) ""))))
                          ;;select the new row
                          (.addRowSelectionInterval table (- (.getRowCount table) 1) (- (.getRowCount table) 1))
                          ;;scroll down to see it
                          (.scrollRectToVisible table (.getCellRect table (- (.getRowCount table) 1) (.getColumnCount table) true))
-                         ;;write in database
-                         (write-new-row testfilename
-                                  (vec (repeat (get-num-fields database) "")) (get-field-lengths database))
+                         ;;write in @databaseref
+                         (write-new-row cfilename
+                                  (vec (repeat (get-num-fields @databaseref) "")) (get-field-lengths @databaseref))
                          (.revalidate table)
                          (.setText label "Row added")))
 
@@ -169,10 +170,10 @@
                        (actionPerformed [event]
                          (if (= -1 (.getSelectedRow table))
                              (.setText label "No row selected")
-                             (do (delete-record-skip-deleted testfilename 
+                             (do (delete-record-skip-deleted cfilename 
                                                               (.getSelectedRow table) 
-                                                              (get-offset database) 
-                                                              (apply + (get-field-lengths database)))
+                                                              (get-offset @databaseref) 
+                                                              (apply + (get-field-lengths @databaseref)))
                                   (.removeRow model (.getSelectedRow table))
                                   (.setText label "Row deleted") ))))
 
@@ -295,6 +296,62 @@
 )
 
 ;-------------------CLIENT FUNCTIONS
+(defn split-lines
+  "Splits s on \\n or \\r\\n."
+  [#^String s]
+  (seq (.split #"\r?\n" s)))
+
+(defn update-inform
+  "Informs that @databaseref has been updated"
+  []
+  (JOptionPane/showMessageDialog
+    nil "Your @databaseref has been updated." "OK"
+    JOptionPane/INFORMATION_MESSAGE))
+    
+(defn react
+  "Performs an action accoding to message performative."
+  [output [receiver perf content]]
+  ;;if message is for me
+  (if (= receiver randomID)
+      ;;Act according to performative
+      (cond (= perf (get performatives :hi))
+              (let [sfilecontent (slurp cfilename)]
+                 (if (= sfilecontent content)
+                     (.setText label "misma version")
+                     (.setText label "otra version"))
+              )
+            (= perf (get performatives :outdated)) 
+              (do (update-inform)
+                  (println "content: " content)
+                  ;;copy new file
+                  (rewrite-file cfilename (get-offset @databaseref) content)
+                  (dosync (alter databaseref read-bin-file cfilename))
+                  (.setText label "@databaseref is outdated!")
+                  
+                  ;()
+              
+                  (.setText label "@databaseref updated."))
+            (= perf (get performatives :ok))
+              (interface "Client")
+            (= perf (get performatives :delete)) 
+              ((.setText label "Deleting...")
+              ())
+            (= perf (get performatives :add)) 
+              ((.setText label "Adding new row...")
+              (write-empty-row cfilename (get-field-lengths @databaseref))
+              (.setText label "Row added."))
+            (= perf (get performatives :refresh)) 
+              ((.setText label "Refreshing...")
+              ()
+              (.setText label "Refreshing done."))
+            (= perf (get performatives :commit)) 
+              ((.setText label "Committing...")
+              ()
+              (.setText label "Commit done."))
+            true (.setText label (str "Performative is \"" perf "\"??? I DUNNO WTF TO DO...")))
+     ;;else
+     (println "None of my business."))
+  )
 
 (defn connect
   "Establishes the connection between the client and server"
@@ -304,14 +361,16 @@
                 output (PrintWriter. (.getOutputStream socket))]
 
       ;;Attempt connection
-      (say output randomID "add" "trolololo lololo lololo")          
+      (say output randomID (get performatives :hi) (str (get-records @databaseref)))
+      
       ;;wait for response
-      ;hear
+      (react output (hear input))
       
       
-      
-             )))
+      ;(say output randomID "add" "trolololo lololo lololo")
+     )))
              
 ;----------------------TEST
 ;(println randomID)
 (connect)
+;(write-empty-row cfilename (get-field-lengths @databaseref))

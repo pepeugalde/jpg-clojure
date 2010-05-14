@@ -5,6 +5,7 @@
                       BufferedWriter FileWriter PrintWriter
                       FileInputStream DataInputStream RandomAccessFile))
     (:use util.dbread))
+    (use 'clojure.contrib.duck-streams)
 
 ;-------------------------------------------------------------------------------
 (defn str-from-b-seq 
@@ -21,8 +22,8 @@
 ;-------------------------------------------------------------------------------
 (defn write-new-row
   "Inserts new registers into the database"
-  [file-name infos sizes]
-  (with-open [printer (FileOutputStream. file-name true)]  
+  [filename infos sizes]
+  (with-open [printer (FileOutputStream. filename true)]  
     (.write printer 
             (byte-array [(byte 0x0000)(byte 0x0000)]))
     (loop [info infos   size sizes]
@@ -39,20 +40,19 @@
   "Inserts new registers into the database"
   [filename sizes]
   (let [totalsize (apply + sizes)
-  	emptystring (apply str (repeat totalsize " "))]
-  (with-open [printer (FileOutputStream. filename true)]  
-    (.write printer 
-            (byte-array [(byte 0x0000)(byte 0x0000)]))
-            (.write printer  emptystring)
-            (.write printer  "I Work")
-  	(.flush printer)))
+  	   emptystring (apply str (repeat totalsize "a"))]
+    (with-open [printer (FileOutputStream. filename true)]  
+      (.write printer
+              (byte-array [(byte 0x0000)(byte 0x0000)]))
+      (.write printer  (.getBytes emptystring))
+      (.flush printer)))
   (println "ROW ADDED"))
   
 ;-------------------------------------------------------------------------------
 (defn set-del-flag
   "Sets to 0x8000 the :deleted flag"
-  [file-name offset]
-  (with-open [writer  (RandomAccessFile. file-name "rw")] 
+  [filename offset]
+  (with-open [writer  (RandomAccessFile. filename "rw")] 
     (.skipBytes writer 
                 offset)
     (.write writer (byte-array [(byte 0x80)(byte 0x00)]) 
@@ -62,14 +62,14 @@
 ;-------------------------------------------------------------------------------
 (defn delete-record-skip-deleted
   "Deletes a record by changing its deleted flag, doesn't consider deleted records"
-  [file-name delrow offset rowlen]
-  (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
+  [filename delrow offset rowlen]
+  (with-open [reader  (DataInputStream.  (FileInputStream.  filename))]  
     (.skipBytes reader 
                 offset)
     (loop [valrow 0 realrow 0]
       (if (= 0 (.readShort reader))
           (do (if (= valrow delrow)
-                  (set-del-flag file-name 
+                  (set-del-flag filename 
                                 (+ offset (* realrow (+ 2 rowlen))))
                   (do (.skipBytes reader 
                                   rowlen)
@@ -81,12 +81,12 @@
 ;-------------------------------------------------------------------------------
 (defn delete-record
   "Deletes a record by changing its deleted flag, counts deleted records"
-  [file-name delrow offset rowlen]
-  (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
+  [filename delrow offset rowlen]
+  (with-open [reader  (DataInputStream.  (FileInputStream.  filename))]  
     (.skipBytes reader offset)
     (loop [realrow 0]
         (if (= realrow delrow)
-            (set-del-flag file-name (+ offset (* realrow (+ 2 rowlen))))
+            (set-del-flag filename (+ offset (* realrow (+ 2 rowlen))))
             (do (.skipBytes reader 
                             rowlen)
                 (recur (inc realrow))))))
@@ -94,8 +94,8 @@
 ;-------------------------------------------------------------------------------
 (defn overwrite-row
   "Overwrites a record beginning at offset"
-  [file-name offset infos sizes]
-  (with-open [writer  (RandomAccessFile. file-name "rw")] 
+  [filename offset infos sizes]
+  (with-open [writer  (RandomAccessFile. filename "rw")] 
     (.skipBytes writer 
                 offset)
     (.write writer (byte-array [(byte 0x00)(byte 0x00)]) 
@@ -110,14 +110,14 @@
 ;-------------------------------------------------------------------------------
 (defn update-record-skip-deleted
   "Updates a record by overwriting content, doesn't consider deleted records"
-  [file-name newrowinfo rowsizes updrow offset]
-  (with-open [reader  (DataInputStream.  (FileInputStream.  file-name))]  
+  [filename newrowinfo rowsizes updrow offset]
+  (with-open [reader  (DataInputStream.  (FileInputStream.  filename))]  
     (.skipBytes reader 
                 offset)
     (loop [valrow 0 realrow 0]
       (if (= 0 (.readShort reader))
           (do (if (= valrow updrow)
-                  (overwrite-row file-name 
+                  (overwrite-row filename 
                               (+ offset (* realrow (+ 2 (apply + rowsizes))))
                               newrowinfo
                               rowsizes)
@@ -128,3 +128,10 @@
                           (apply + rowsizes))
               (recur valrow (inc realrow))))))
   (println "ROW UPDATED"))
+;-------------------------------------------------------------------------------
+(defn rewrite-file
+  "Inserts new registers into the database"
+  [filename offset newdata]
+    (let [header (apply str (take offset (slurp filename)))]
+      (spit filename (apply str header newdata))))
+   
