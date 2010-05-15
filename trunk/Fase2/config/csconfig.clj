@@ -21,4 +21,4 @@
 (def perflength 3)
 
 ;Performative's vector
-(def performatives {:ok "ok!", :no "no!", :outdated "out", :hi "hi!", :update "upd", :delete "del", :add "add", :refresh "rfr", :commit "cmt"})
+(def performatives {:ok "ok!", :no "no!", :outdated "out", :hi "hi!", :update "upd", :delete "del", :add "add", :refresh "rfr"})
