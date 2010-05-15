@@ -40,7 +40,7 @@
   "Inserts new registers into the database"
   [filename sizes]
   (let [totalsize (apply + sizes)
-  	   emptystring (apply str (repeat totalsize "a"))]
+  	   emptystring (apply str (repeat totalsize " "))]
     (with-open [printer (FileOutputStream. filename true)]  
       (.write printer
               (byte-array [(byte 0x0000)(byte 0x0000)]))
