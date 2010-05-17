@@ -367,7 +367,10 @@
                       
             (= myperf (get performatives :delete))
                 (cond (= perf (get performatives :ok))
-                        (.setText label "Row Deleted")
+                	;;yo cambie el do
+                	(do (delete-record-skip-deleted cfilename)
+                	    ;(reload)
+                        (.setText label "Row Deleted"))
                       (= perf (get performatives :no)) 
                         (.setText label "=(")
                       
