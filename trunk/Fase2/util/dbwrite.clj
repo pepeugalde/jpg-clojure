@@ -1,10 +1,12 @@
 (ns util.dbwrite
+	
     "This namespace contains functions that can overwrite or replace parts of 
     a binary file. It specifically allows reading the URLyBird database file."  
     (:import (java.io FileOutputStream DataOutputStream PrintStream 
                       BufferedWriter FileWriter PrintWriter
                       FileInputStream DataInputStream RandomAccessFile))
-    (:use util.dbread))
+    (:use util.dbread)
+(:require clojure.contrib.gen-html-docs))
     (use 'clojure.contrib.duck-streams)
 
 ;-------------------------------------------------------------------------------
