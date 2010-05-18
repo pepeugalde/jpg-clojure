@@ -16,7 +16,7 @@
 (def clientlist  (ref #{}))
 
 "Defines the file that will be readed as a database"
-(def databaseref (ref (read-bin-file sfilename)))
+(def sdatabaseref (ref (read-bin-file sfilename)))
 
 "Defines a reference to the content"
 (def filecontent (ref (slurp sfilename)))
@@ -32,10 +32,10 @@
 (defn reload-db
   "Reloads the database from a file"
   []
-  (dosync (alter databaseref (fn[_] (read-bin-file sfilename))))
+  (dosync (alter sdatabaseref (fn[_] (read-bin-file sfilename))))
 )
  
-(defn react
+(defn sreact
   "Performs an action accoding to message performative."
   [output [sender perf content]]
   ;;If client is new, add it to list
@@ -47,14 +47,14 @@
          ;;compare versions
          (do ;;reload database
              ;(reload-db)
-             (if (= content (str (get-records @databaseref)))
+             (if (= content (str (get-records @sdatabaseref)))
                  ;;client has same version
                  (do (println "Client has same version.")
                      ;;tell client
                      (say output sender (get performatives :ok) ""))
                  ;;client has other version
                  (do (println "Client has different version.")
-                     (let [sfilecontent (apply str (drop (get-offset @databaseref) (slurp sfilename)))]
+                     (let [sfilecontent (apply str (drop (get-offset @sdatabaseref) (slurp sfilename)))]
                           ;;tell client
                           (say output sender (get performatives :outdated) sfilecontent)))))
                       
@@ -62,14 +62,14 @@
            ;;compare versions
           (do ;;reload database
               (reload-db)
-              (if  (= content (str (get-records @databaseref)))
+              (if  (= content (str (get-records @sdatabaseref)))
                    ;;client has same version
                    (do (println "Client has same version.")
                        ;;tell client
                        (say output sender (get performatives :ok) ""))
                    ;;client has other version
                    (do (println "Client has different version.")
-                       (let [sfilecontent (apply str (drop (get-offset @databaseref) (slurp sfilename)))]
+                       (let [sfilecontent (apply str (drop (get-offset @sdatabaseref) (slurp sfilename)))]
                          ;;tell client
                          (say output sender (get performatives :outdated) sfilecontent))))
               (println "Refreshing done."))
@@ -94,7 +94,7 @@
               
         (= perf (get performatives :add)) 
           (do (println "Adding new row...")
-              (write-empty-row sfilename (get-field-lengths @databaseref))
+              (write-empty-row sfilename (get-field-lengths @sdatabaseref))
               ;;reload database
               (reload-db)
               ;;tell client
@@ -120,10 +120,10 @@
         (with-open [input  (BufferedReader. (InputStreamReader. (.getInputStream csocket)))
                     output (PrintWriter. (.getOutputStream csocket))]
         
-          (react output (hear input)))
+          (sreact output (hear input)))
           
         (recur)))))
 
 ;-----------TEST
-(serve)
-;(write-empty-row sfilename (get-field-lengths @databaseref))
+;(serve)
+;(write-empty-row sfilename (get-field-lengths @sdatabaseref))

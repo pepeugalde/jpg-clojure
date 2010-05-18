@@ -43,7 +43,7 @@
 (def databaseref (ref (read-bin-file cfilename)))
 
 "Defines the matrix in which the @databaseref will de displayed"
-(def datamatrix     (ref
+(def datamatrixref     (ref
                       (get-record2d-values 
                         (records-to-array 
                           (filter-non-deleted 
@@ -51,34 +51,24 @@
                           (get-num-fields @databaseref)))))
                           
 "Defines the JTable used by the @databaseref"
-(def table       (JTable. ))
+(def ctable       (JTable. ))
 
 "Defines the table model"
-(def modelref    (ref (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names @databaseref))])))
+(def modelref    (ref (proxy [DefaultTableModel]  [@datamatrixref (into-array (get-col-names @databaseref))])))
 
 "Message/Status label"
-(def label       (JLabel. "Welcome! Your database is up to date."))
+(def clabel       (JLabel. "Welcome! Your database is up to date."))
 
 ;------------------------------FUNCTIONS
-(defn paintDeleted
-  "Paints red deleted records in table"
-  []
-  (loop [i 0]
-        (if (< i (alength @datamatrix))
-            (do (if (= true (aget @datamatrix i (get-num-fields @databaseref)))
-                    (.setBackground (.getRow table i) Color/RED)
-                    ())
-                (recur (inc i)))
-            ())))
 
 (defn printmatrix
   "Reads the data base information that will be written in a matrix"
   []
-  (println "alength: " (alength @datamatrix))
-  (println "alength 1: " (alength (aget @datamatrix 0)))
+  (println "alength: " (alength @datamatrixref))
+  (println "alength 1: " (alength (aget @datamatrixref 0)))
   (loop [i 0]
-        (if (< i (alength @datamatrix))
-            (do (println "matrix " (aget @datamatrix i 0))
+        (if (< i (alength @datamatrixref))
+            (do (println "matrix " (aget @datamatrixref i 0))
                 (recur (inc i)))
             ())))
 
@@ -86,17 +76,17 @@
   "Resets the table model when database is updated"
   []
   (dosync (alter databaseref (fn[_] (read-bin-file cfilename)))
-          (alter datamatrix  (fn[_] (get-record2d-values 
+          (alter datamatrixref  (fn[_] (get-record2d-values 
                                       (records-to-array 
                                         (filter-non-deleted 
                                           (get-records @databaseref))
                                         (get-num-fields @databaseref)))))
-          (alter modelref    (fn[_] (proxy [DefaultTableModel]  [@datamatrix (into-array (get-col-names @databaseref))])))
-          (.setModel table @modelref))
+          (alter modelref    (fn[_] (proxy [DefaultTableModel]  [@datamatrixref (into-array (get-col-names @databaseref))])))
+          (.setModel ctable @modelref))
   (printmatrix)
 )
 ;----------------------------------INTERFACE
-(defn interface
+(defn cinterface
   "Displays the interface that will be used in the urlybird project"
   [title]
   (let [frame       (JFrame. title)
@@ -119,7 +109,7 @@
         
         counter     (ref 0)
 
-        tScrPane    (JScrollPane. table)
+        tScrPane    (JScrollPane. ctable)
         
         tListener   (proxy [TableModelListener] []
             (tableChanged [event]   
@@ -154,11 +144,11 @@
                        (actionPerformed [event]
                          ;;erase filter
                          (.setRowFilter sorter (RowFilter/regexFilter "" (int-array 0)))
-                         (.setText label "All rows Displayed")))
+                         (.setText clabel "All rows Displayed")))
 
         hdlAdd        (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (.setText label "Adding row...")
+                         (.setText clabel "Adding row...")
                          ;;erase filter
                          (.setRowFilter sorter (RowFilter/regexFilter "" (int-array 0)))
                          ;;write in database empty row
@@ -166,29 +156,29 @@
                          ;;reload db and table model
                          (reload)
                          ;;scroll down to see it
-                         (.scrollRectToVisible table (.getCellRect table (- (.getRowCount table) 1) (.getColumnCount table) true))
+                         (.scrollRectToVisible ctable (.getCellRect ctable (- (.getRowCount ctable) 1) (.getColumnCount ctable) true))
                          ;;select the new row
-                         (.addRowSelectionInterval table (- (.getRowCount table) 1) (- (.getRowCount table) 1))
-                         (.revalidate table)
-                         (.setText label "Row added")
+                         (.addRowSelectionInterval ctable (- (.getRowCount ctable) 1) (- (.getRowCount ctable) 1))
+                         (.revalidate ctable)
+                         (.setText clabel "Row added")
                          ;;tell server
                          (connect (get performatives :add) " ")))
 
         hdlDelete     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (if (= -1 (.getSelectedRow table))
-                             (.setText label "No row selected")
+                         (if (= -1 (.getSelectedRow ctable))
+                             (.setText clabel "No row selected")
                              (do (delete-record-skip-deleted cfilename 
-                                                              (.getSelectedRow table) 
+                                                              (.getSelectedRow ctable) 
                                                               (get-offset @databaseref) 
                                                               (apply + (get-field-lengths @databaseref)))
                                   
-                                  (.setText label "Row deleted") ))))
+                                  (.setText clabel "Row deleted") ))))
 
         hdlFind     (proxy [ActionListener][]
                        (actionPerformed [event]
-                         (.setRowFilter (.getRowSorter table) filter)
-                         (.setText label "Filtered rows")))
+                         (.setRowFilter (.getRowSorter ctable) filter)
+                         (.setText clabel "Filtered rows")))
                          
         hdlRefresh  (proxy [ActionListener][]
                        (actionPerformed [event]
@@ -227,15 +217,15 @@
     
     
     ;;;;;;;TABLE
-    (.setModel table @modelref)
-    (.setSelectionMode table 0)
-    (.setRowSorter table sorter)
+    (.setModel ctable @modelref)
+    (.setSelectionMode ctable 0)
+    (.setRowSorter ctable sorter)
     
-    ;(.setPreferredSize table (Dimension. tableSX tableSY))
-    ;(.setPreferredScrollableViewportSize table (Dimension. tableSX tableSY))
-    ;(.setFillsViewportHeight table true)
+    ;(.setPreferredSize ctable (Dimension. tableSX tableSY))
+    ;(.setPreferredScrollableViewportSize ctable (Dimension. tableSX tableSY))
+    ;(.setFillsViewportHeight ctable true)
     (.setPreferredSize tScrPane (Dimension. tableSX tableSY))
-    (.setRowSorter table sorter)
+    (.setRowSorter ctable sorter)
     (.addTableModelListener @modelref tListener)
     
     
@@ -256,7 +246,7 @@
     (.setPreferredSize searchBox    (Dimension. btnSX defaultboxh))
     
     ;;;;;;;LABEL
-    (.setPreferredSize label        (Dimension. windowSX defaultboxh))
+    (.setPreferredSize clabel        (Dimension. windowSX defaultboxh))
     (.setPreferredSize imgLabel (Dimension. windowSX topY))
     (.setIcon imgLabel (ImageIcon. "./img/urly.jpg"))
     
@@ -280,7 +270,7 @@
     (.add frame BorderLayout/NORTH hPanel)
     (.add frame BorderLayout/CENTER tScrPane)
     (.add frame BorderLayout/EAST abPanel)
-    (.add frame BorderLayout/PAGE_END label)
+    (.add frame BorderLayout/PAGE_END clabel)
     
     ;;;ACTION LISTENERS
     (.addActionListener btnShowall hdlShowall)
@@ -318,17 +308,17 @@
       ;;Act according to my own performative
       (cond (= myperf (get performatives :hi))
                 (cond (= perf (get performatives :outdated)) 
-                        (do (interface "Client")
+                        (do (cinterface "Client")
                             ;;copy new file
                             (rewrite-file cfilename (get-offset @databaseref) content)
                             ;;reload database and model
                             (reload)
-                            (.setText label "Database updated.")
+                            (.setText clabel "Database updated.")
                             (update-inform true))
                       (= perf (get performatives :ok))
-                        (do (interface "Client"))
+                        (do (cinterface "Client"))
                       
-                      true (.setText label "WRONG PERFORMATIVE RECEIVED! EXPECTED :outdated OR :ok"))
+                      true (.setText clabel "WRONG PERFORMATIVE RECEIVED! EXPECTED :outdated OR :ok"))
 
             (= myperf (get performatives :refresh))
                 (cond (= perf (get performatives :outdated)) 
@@ -338,43 +328,43 @@
                             (println "2")
                             (reload)
                             (println "4")
-                            (.setText label "Database updated.")
+                            (.setText clabel "Database updated.")
                             (update-inform true))
                       (= perf (get performatives :ok))
                         (do (update-inform false)
-                            (.setText label "Database is up to date."))
+                            (.setText clabel "Database is up to date."))
                       
-                      true (.setText label "WRONG PERFORMATIVE RECEIVED! EXPECTED :outdated OR :ok"))
+                      true (.setText clabel "WRONG PERFORMATIVE RECEIVED! EXPECTED :outdated OR :ok"))
 
             (= myperf (get performatives :update))
                 (cond (= perf (get performatives :ok))
-                        (.setText label "Row Updated")
+                        (.setText clabel "Row Updated")
                       (= perf (get performatives :no)) 
-                        (.setText label "=(")
+                        (.setText clabel "=(")
                       
-                      true (.setText label "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no"))
+                      true (.setText clabel "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no"))
 
             
             (= myperf (get performatives :add))
                 (cond (= perf (get performatives :ok))
                         (do (reload)
-                            (.setText label "Row Added"))
+                            (.setText clabel "Row Added"))
                       (= perf (get performatives :no)) 
-                        (.setText label "=(")
+                        (.setText clabel "=(")
                       
-                      true (.setText label "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no"))
+                      true (.setText clabel "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no"))
 
                       
             (= myperf (get performatives :delete))
                 (cond (= perf (get performatives :ok))
                 	;;yo cambie el do
                 	(do (delete-record-skip-deleted cfilename)
-                	    ;(reload)
-                        (.setText label "Row Deleted"))
+                	    (reload)
+                            (.setText clabel "Row Deleted"))
                       (= perf (get performatives :no)) 
-                        (.setText label "=(")
+                        (.setText clabel "=(")
                       
-                      true (.setText label "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no")))
+                      true (.setText clabel "WRONG PERFORMATIVE RECEIVED! EXPECTED :ok OR :no")))
             
      ;;else
      (println "None of my business. " receiver " should be " randomID))
@@ -395,7 +385,10 @@
       
      )))
              
+(defn initclient
+  []
+  (connect (get performatives :hi) (str (get-records @databaseref))))
 ;----------------------TEST
 ;(println randomID)
-(connect (get performatives :hi) (str (get-records @databaseref)))
+;(connect (get performatives :hi) (str (get-records @databaseref)))
 ;(write-empty-row cfilename (get-field-lengths @databaseref))
